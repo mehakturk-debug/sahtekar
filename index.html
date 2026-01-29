@@ -3,58 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Canlı Ses Fix</title>
+    <title>İmpostor Canlı Ses & Renk</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: var(--card); border-radius: 24px; padding: 32px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: var(--card); border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        h1 { text-align: center; color: var(--accent); margin-bottom: 24px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
-        button { width: 100%; padding: 16px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 12px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 10px; }
+        button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Renk Seçimi */
         .color-picker { display: flex; justify-content: space-around; margin: 15px 0; }
-        .color-opt { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-opt.selected { border-color: white; transform: scale(1.2); }
-        .turn-box { text-align: center; padding: 30px; border-radius: 20px; margin-bottom: 20px; transition: background 0.8s ease; }
-        .status-msg { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 10px; }
+
+        /* Oyun Ekranı Efektleri */
+        .turn-panel { padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: background 0.8s ease; }
+        .word-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; text-align: center; font-size: 24px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="homeScreen" class="screen active">
-        <h1>🎭 İmpostor Voice</h1>
+        <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Voice</h1>
         <input type="text" id="nickInput" placeholder="Nickname">
         <input type="text" id="codeInput" placeholder="Oyun Kodu">
-        <p style="text-align:center;">Rengini Seç:</p>
+        <p style="text-align:center; margin-top:10px;">Rengini Seç:</p>
         <div class="color-picker" id="colorPicker">
-            <div class="color-opt" style="background:#ff4757" data-color="#ff4757"></div>
-            <div class="color-opt" style="background:#2ed573" data-color="#2ed573"></div>
-            <div class="color-opt" style="background:#1e90ff" data-color="#1e90ff"></div>
-            <div class="color-opt" style="background:#ffa502" data-color="#ffa502"></div>
-            <div class="color-opt" style="background:#3700b3" data-color="#3700b3"></div>
+            <div class="color-opt" style="background:#ef4444" data-color="#ef4444"></div>
+            <div class="color-opt" style="background:#22c55e" data-color="#22c55e"></div>
+            <div class="color-opt" style="background:#3b82f6" data-color="#3b82f6"></div>
+            <div class="color-opt" style="background:#eab308" data-color="#eab308"></div>
+            <div class="color-opt" style="background:#a855f7" data-color="#a855f7"></div>
         </div>
         <button id="btnJoin">SESİ AÇ VE GİRİŞ YAP</button>
-        <p class="status-msg">⚠️ Ses için mutlaka HTTPS kullanın ve izin verin.</p>
     </div>
 
     <div id="lobbyScreen" class="screen">
         <h2 style="text-align:center">Lobi: <span id="displayCode"></span></h2>
-        <div id="playersList" style="margin:20px 0; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"></div>
+        <div id="playersList" style="text-align:center; margin:20px 0;"></div>
         <div id="modControls" style="display:none">
             <button id="btnStart">OYUNU BAŞLAT</button>
         </div>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div id="turnDisplay" class="turn-box">
-            <h2 id="activePlayerName">Yükleniyor...</h2>
+        <div id="turnPanel" class="turn-panel">
+            <h2 id="activePlayerName">...</h2>
             <p>Sıra Onda!</p>
         </div>
-        <div id="wordBox" style="background:#334155; padding:20px; border-radius:15px; text-align:center; font-size:22px;"></div>
-        <button id="btnNext" style="display:none; background:#ffa502; margin-top:20px;">Sıradakine Geç ➔</button>
+        <div id="wordDisplay" class="word-box"></div>
+        <button id="btnNext" style="display:none; background:#f59e0b">Sıradakine Geç ➔</button>
     </div>
 </div>
 
@@ -75,9 +77,9 @@
     const db = getDatabase(app);
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    let myName = "", myColor = "#ff4757", gameCode = "";
+    let myName = "", myColor = "#ef4444", gameCode = "";
 
-    // Renk seçme işlemi
+    // Renk seçimi
     document.querySelectorAll('.color-opt').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('selected'));
@@ -86,8 +88,8 @@
         };
     });
 
-    // --- SES SİSTEMİ ---
-    async function initVoice(channel) {
+    // Ses sistemini başlat
+    async function startVoice(channel) {
         try {
             await client.join(AGORA_APP_ID, channel, null, null);
             const localAudio = await AgoraRTC.createMicrophoneAudioTrack();
@@ -99,17 +101,13 @@
                     user.audioTrack.play(); // Gelen sesi oynat
                 }
             });
-            console.log("Ses aktif!");
-        } catch (e) {
-            console.error("Mikrofon hatası:", e);
-            alert("Sesi duymak ve konuşmak için mikrofon izni vermeniz şart!");
-        }
+        } catch (e) { console.error("Ses hatası:", e); }
     }
 
     document.getElementById('btnJoin').onclick = async () => {
         myName = document.getElementById('nickInput').value.trim();
         let code = document.getElementById('codeInput').value.trim().toUpperCase();
-        if(!myName) return alert("Nickname girin!");
+        if(!myName) return alert("İsim yazın!");
 
         if(code) {
             gameCode = code;
@@ -119,28 +117,30 @@
         }
 
         await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
-        await initVoice(gameCode); // Ses bağlantısını kur
+        await startVoice(gameCode); // Butona basınca sesi başlat (Autoplay engeline takılmaz)
         
         document.getElementById('homeScreen').classList.remove('active');
         document.getElementById('lobbyScreen').classList.add('active');
         document.getElementById('displayCode').innerText = gameCode;
-        startListening();
+        listen();
     };
 
-    function startListening() {
+    function listen() {
         onValue(ref(db, `games/${gameCode}`), (snap) => {
             const data = snap.val();
             if(!data) return;
 
+            // Oyuncu Listesi
             const list = document.getElementById('playersList');
             list.innerHTML = "";
             const players = data.players || {};
             Object.values(players).forEach(p => {
-                list.innerHTML += `<div style="background:${p.color}; padding:8px 15px; border-radius:20px; font-weight:bold;">${p.name}</div>`;
+                list.innerHTML += `<div style="background:${p.color}; display:inline-block; padding:5px 15px; border-radius:20px; margin:5px; font-weight:bold;">${p.name}</div>`;
             });
 
             if(myName === data.moderator) document.getElementById('modControls').style.display = 'block';
 
+            // Oyun Başladıysa
             if(data.status === 'playing') {
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
@@ -148,21 +148,14 @@
                 const activePlayerName = data.playerOrder[data.turn];
                 const activePlayer = Object.values(players).find(p => p.name === activePlayerName);
                 
-                // --- RENK VE SIRALAMA GÖRSELİ ---
-                const turnDisplay = document.getElementById('turnDisplay');
+                // --- RENK GÜNCELLEME ---
+                const turnPanel = document.getElementById('turnPanel');
                 document.getElementById('activePlayerName').innerText = activePlayerName;
-                if(activePlayer) turnDisplay.style.background = activePlayer.color;
+                if(activePlayer) turnPanel.style.background = activePlayer.color;
                 
-                // Rol/Kelime
-                const wordBox = document.getElementById('wordBox');
-                if(data.impostor === myName) {
-                    wordBox.innerText = "🎭 İMPOSTORSUN!";
-                    wordBox.style.color = "#ff4757";
-                } else {
-                    wordBox.innerText = "Kelime: " + data.word;
-                    wordBox.style.color = "#2ed573";
-                }
-
+                const wordBox = document.getElementById('wordDisplay');
+                wordBox.innerText = (data.impostor === myName) ? "🎭 İMPOSTORSUN!" : "Kelime: " + data.word;
+                
                 document.getElementById('btnNext').style.display = (myName === data.moderator) ? 'block' : 'none';
             }
         });
@@ -174,7 +167,7 @@
         const imp = players[Math.floor(Math.random() * players.length)];
         await update(ref(db, `games/${gameCode}`), {
             status: 'playing',
-            word: "Hamburger",
+            word: "DOKTOR",
             impostor: imp,
             playerOrder: players,
             turn: 0
