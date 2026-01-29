@@ -6,18 +6,17 @@
     <title>Kelime İmpostor - Multiplayer</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; width: 100%; padding: 40px; }
-        h1 { color: #667eea; text-align: center; margin-bottom: 30px; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 450px; width: 100%; padding: 30px; }
         .screen { display: none; }
-        .screen.active { display: block; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        .player-item { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #667eea; }
-        .word-box { background: #f0f0f0; padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0; font-size: 2em; font-weight: bold; color: #764ba2; }
+        .active { display: block; }
+        h1 { color: #667eea; text-align: center; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #764ba2; }
+        .player-item { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 5px solid #667eea; display: flex; justify-content: space-between; }
+        .word-box { background: #764ba2; color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0; font-size: 2em; font-weight: bold; }
+        #errorMessage { color: red; text-align: center; font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -25,147 +24,133 @@
 <div class="container">
     <div id="homeScreen" class="screen active">
         <h1>🎭 Kelime İmpostor</h1>
-        <div class="input-group">
-            <label>Nickname:</label>
-            <input type="text" id="nicknameInput" placeholder="Adınızı girin..." maxlength="15">
-        </div>
-        <div class="input-group">
-            <label>Oyun Kodu (Katılmak için):</label>
-            <input type="text" id="gameCodeInput" placeholder="Varsa kodu girin">
-        </div>
-        <button id="joinBtn">🚀 Oyuna Başla / Katıl</button>
+        <input type="text" id="nickInput" placeholder="Nickname Yazın">
+        <input type="text" id="codeInput" placeholder="Oyun Kodu (Varsa)">
+        <button id="btnJoin">Oyuna Başla</button>
+        <div id="errorMessage"></div>
     </div>
 
     <div id="lobbyScreen" class="screen">
-        <h2>🎮 Oyun Lobisi</h2>
-        <div style="text-align: center; margin: 20px 0;">
-            <p>Oyun Kodu:</p>
-            <h2 id="displayCode" style="letter-spacing: 5px; color: #667eea;">----</h2>
+        <h2>🎮 Lobi - Kod: <span id="displayCode" style="color:#764ba2"></span></h2>
+        <div id="playersList" style="margin:20px 0"></div>
+        <div id="modControls" style="display:none">
+            <button id="btnStart">Oyunu Başlat</button>
         </div>
-        <div id="playersList"></div>
-        <div id="modControls" style="display: none; margin-top: 20px;">
-            <button id="startBtn">🎮 Oyunu Başlat</button>
-        </div>
-        <p id="waitingMsg" style="text-align: center; color: #666; margin-top: 20px;">Moderatörün oyunu başlatması bekleniyor...</p>
+        <p id="waitText" style="text-align:center; color:#666; display:none">Moderatör bekleniyor...</p>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div id="roleHeader" style="text-align: center; font-size: 1.5em; margin-bottom: 20px;"></div>
+        <div id="roleHeader" style="text-align:center; font-weight:bold; font-size:1.5em; margin-bottom:10px"></div>
         <div id="wordDisplay" class="word-box"></div>
-        <p style="text-align: center; color: #666;">Şimdi sırayla kelimeyi anlatın!</p>
-        <button onclick="location.reload()" style="background: #6c757d; margin-top: 30px;">🏠 Ana Sayfaya Dön</button>
+        <button onclick="location.reload()" style="background:#6c757d">Çıkış Yap</button>
     </div>
 </div>
 
 <script type="module">
+    // Firebase v10.8.0 sürümünü kullanıyoruz
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // GÖRSELLERİNDEKİ BİLGİLERE GÖRE DÜZELTİLMİŞ YAPILANDIRMA
+    // GÖRSELİNDEKİ HATA MESAJINDA YAZAN TAM VE DOĞRU ADRES:
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
-        databaseURL: "https://sahtesar-2f5d2-default-rtdb.europe-west1.firebasedatabase.app/",
+        databaseURL: "https://sahtekar-2f5d2-default-rtdb.europe-west1.firebasedatabase.app/",
         projectId: "sahtekar-2f5d2",
         appId: "1:223883537002:web:1c16bde374d11efb5d7813"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    let db;
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        console.log("Firebase Bağlantısı Deneniyor...");
+    } catch (e) {
+        document.getElementById('errorMessage').innerText = "Bağlantı Kurulamadı: " + e.message;
+    }
 
     let myName = "";
-    let currentGameCode = "";
+    let gameCode = "";
 
-    // Kelime Listesi
-    const words = ["Elma", "Zürafa", "Uçak", "Doktor", "Futbol", "Gitar", "Piyano", "Teleskop"];
+    document.getElementById('btnJoin').onclick = async () => {
+        myName = document.getElementById('nickInput').value.trim();
+        let inputCode = document.getElementById('codeInput').value.trim().toUpperCase();
+        
+        if(!myName) return alert("Lütfen isim girin!");
 
-    // BUTON: Oyuna Giriş
-    document.getElementById('joinBtn').addEventListener('click', async () => {
-        myName = document.getElementById('nicknameInput').value.trim();
-        let inputCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
-
-        if (!myName) return alert("Lütfen bir nickname girin!");
-
-        if (inputCode) {
-            // Kod girilmişse o odaya git
-            const snap = await get(ref(db, `games/${inputCode}`));
-            if (!snap.exists()) return alert("Hatalı kod! Oyun bulunamadı.");
-            currentGameCode = inputCode;
-        } else {
-            // Kod yoksa yeni oda kur
-            currentGameCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            await set(ref(db, `games/${currentGameCode}`), {
-                status: 'waiting',
-                moderator: myName,
-                createdAt: Date.now()
-            });
-        }
-
-        // Oyuncuyu ekle
-        await update(ref(db, `games/${currentGameCode}/players/${myName}`), { name: myName });
-        onDisconnect(ref(db, `games/${currentGameCode}/players/${myName}`)).remove();
-
-        showScreen('lobbyScreen');
-        document.getElementById('displayCode').innerText = currentGameCode;
-        listenToGame();
-    });
-
-    // BUTON: Oyunu Başlat (Sadece Mod)
-    document.getElementById('startBtn').addEventListener('click', async () => {
-        const snap = await get(ref(db, `games/${currentGameCode}/players`));
-        const players = Object.keys(snap.val());
-        if (players.length < 2) return alert("En az 2 kişi gereklidir!");
-
-        const selectedWord = words[Math.floor(Math.random() * words.length)];
-        const impostor = players[Math.floor(Math.random() * players.length)];
-
-        await update(ref(db, `games/${currentGameCode}`), {
-            status: 'playing',
-            word: selectedWord,
-            impostor: impostor
-        });
-    });
-
-    // Veritabanı Dinleyici
-    function listenToGame() {
-        onValue(ref(db, `games/${currentGameCode}`), (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            // Oyuncu listesini güncelle
-            const listDiv = document.getElementById('playersList');
-            listDiv.innerHTML = "";
-            Object.keys(data.players || {}).forEach(p => {
-                listDiv.innerHTML += `<div class="player-item">${p} ${p === data.moderator ? '⭐' : ''}</div>`;
-            });
-
-            // Moderatör kontrolleri
-            if (data.moderator === myName) {
-                document.getElementById('modControls').style.display = 'block';
-                document.getElementById('waitingMsg').style.display = 'none';
+        try {
+            if(inputCode) {
+                const snap = await get(ref(db, `games/${inputCode}`));
+                if(!snap.exists()) return alert("Oyun bulunamadı!");
+                gameCode = inputCode;
+            } else {
+                gameCode = Math.random().toString(36).substring(2,7).toUpperCase();
+                await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
             }
 
-            // Oyun başladıysa
-            if (data.status === 'playing') {
+            await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName });
+            onDisconnect(ref(db, `games/${gameCode}/players/${myName}`)).remove();
+
+            startListening();
+            showScreen('lobbyScreen');
+            document.getElementById('displayCode').innerText = gameCode;
+        } catch (err) {
+            document.getElementById('errorMessage').innerText = "Hata: " + err.message;
+            console.error(err);
+        }
+    };
+
+    function startListening() {
+        onValue(ref(db, `games/${gameCode}`), (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return;
+
+            const list = document.getElementById('playersList');
+            list.innerHTML = "";
+            Object.keys(data.players || {}).forEach(p => {
+                list.innerHTML += `<div class="player-item"><span>${p}</span> ${p === data.moderator ? '⭐' : ''}</div>`;
+            });
+
+            if(myName === data.moderator) {
+                document.getElementById('modControls').style.display = 'block';
+            } else {
+                document.getElementById('waitText').style.display = 'block';
+            }
+
+            if(data.status === 'playing') {
                 showScreen('gameScreen');
-                if (data.impostor === myName) {
-                    document.getElementById('roleHeader').innerText = "🎭 SEN İMPOSTORSUN!";
-                    document.getElementById('roleHeader').style.color = "#ff4757";
-                    document.getElementById('wordDisplay').innerText = "???";
+                const header = document.getElementById('roleHeader');
+                const wordBox = document.getElementById('wordDisplay');
+
+                if(myName === data.impostor) {
+                    header.innerText = "🎭 SEN İMPOSTORSUN!";
+                    header.style.color = "#ff4757";
+                    wordBox.innerText = "İpucu: Hayatta kal!";
                 } else {
-                    document.getElementById('roleHeader').innerText = "✅ SEN KÖYLÜSÜN";
-                    document.getElementById('roleHeader').style.color = "#2ed573";
-                    document.getElementById('wordDisplay').innerText = data.word;
+                    header.innerText = "✅ SEN KÖYLÜSÜN";
+                    header.style.color = "#2ed573";
+                    wordBox.innerText = data.word;
                 }
             }
         });
     }
+
+    document.getElementById('btnStart').onclick = async () => {
+        const snap = await get(ref(db, `games/${gameCode}/players`));
+        const players = Object.keys(snap.val());
+        const imp = players[Math.floor(Math.random() * players.length)];
+
+        await update(ref(db, `games/${gameCode}`), {
+            status: 'playing',
+            impostor: imp,
+            word: "ASLAN" // Test amaçlı sabit kelime
+        });
+    };
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 </script>
-
 </body>
 </html>
