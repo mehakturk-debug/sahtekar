@@ -3,68 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Bas-Konuş</title>
+    <title>İmpostor Bas-Konuş & Renk</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: var(--card); border-radius: 24px; padding: 25px; width: 90%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: var(--card); border-radius: 24px; padding: 30px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
         button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
-        /* Renk Seçici */
+        /* Renk Seçimi */
         .color-picker { display: flex; justify-content: space-around; margin: 15px 0; }
-        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; transition: 0.2s; }
-        .selected { transform: scale(1.3); box-shadow: 0 0 15px var(--accent); }
+        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        .selected { border-color: white; transform: scale(1.2); box-shadow: 0 0 15px var(--accent); }
 
-        /* Mikrofon Butonu */
-        .mic-container { text-align: center; margin-top: 20px; }
+        /* Bas-Konuş Mikrofonu */
+        .mic-section { text-align: center; margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 20px; }
         #micBtn { 
-            width: 80px; height: 80px; border-radius: 50%; background: #475569; 
-            border: 4px solid #1e293b; color: white; font-size: 30px; 
-            transition: 0.3s; margin: 0 auto; display: flex; align-items: center; justify-content: center;
+            width: 90px; height: 90px; border-radius: 50%; background: #475569; 
+            border: 5px solid #1e293b; color: white; font-size: 40px; 
+            cursor: pointer; transition: 0.2s; outline: none;
         }
-        #micBtn.talking { background: #ef4444; transform: scale(1.1); box-shadow: 0 0 20px #ef4444; }
+        #micBtn.active-mic { background: #ef4444; transform: scale(1.1); box-shadow: 0 0 30px #ef4444; }
 
-        .turn-area { padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: 0.5s; border: 2px solid rgba(255,255,255,0.1); }
-        .status-bar { font-size: 11px; text-align: center; color: #94a3b8; margin-bottom: 10px; }
+        .turn-box { padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: background 0.8s ease; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status" class="status-bar">Bağlantı Bekleniyor...</div>
-
     <div id="homeScreen" class="screen active">
-        <h1 style="text-align:center">🎭 İmpostor</h1>
-        <input type="text" id="nick" placeholder="Nickname">
-        <input type="text" id="room" placeholder="Oyun Kodu">
+        <h1 style="text-align:center">🎭 İmpostor Voice</h1>
+        <input type="text" id="nickInput" placeholder="Nickname">
+        <input type="text" id="codeInput" placeholder="Oyun Kodu">
         <div class="color-picker">
-            <div class="color-opt" style="background:#ef4444" data-c="#ef4444"></div>
-            <div class="color-opt" style="background:#22c55e" data-c="#22c55e"></div>
-            <div class="color-opt" style="background:#3b82f6" data-c="#3b82f6"></div>
-            <div class="color-opt" style="background:#eab308" data-c="#eab308"></div>
-            <div class="color-opt" style="background:#a855f7" data-c="#a855f7"></div>
+            <div class="color-opt" style="background:#ef4444" data-color="#ef4444"></div>
+            <div class="color-opt" style="background:#22c55e" data-color="#22c55e"></div>
+            <div class="color-opt" style="background:#3b82f6" data-color="#3b82f6"></div>
+            <div class="color-opt" style="background:#eab308" data-color="#eab308"></div>
+            <div class="color-opt" style="background:#a855f7" data-color="#a855f7"></div>
         </div>
-        <button id="btnEnter">OYUNA KATIL</button>
+        <button id="btnJoin">BAĞLAN VE GİRİŞ YAP</button>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div id="turnPanel" class="turn-area">
-            <h2 id="activeName">Bekleniyor</h2>
+        <div id="turnPanel" class="turn-box">
+            <h2 id="activePlayerName">Bekleniyor...</h2>
             <p>Sıra Onda!</p>
         </div>
         
-        <div id="wordBox" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:15px; text-align:center; font-weight:bold"></div>
+        <div id="wordDisplay" style="background:rgba(0,0,0,0.3); padding:20px; border-radius:15px; text-align:center; font-size:22px; font-weight:bold;"></div>
 
-        <div class="mic-container">
+        <div class="mic-section">
             <button id="micBtn">🎙️</button>
-            <p id="micStatus" style="font-size:12px; margin-top:10px; color:#94a3b8">Basılı Tutarak Konuş</p>
+            <p id="micHint" style="margin-top:10px; font-size:12px; color:#94a3b8;">Konuşmak için Basılı Tut</p>
         </div>
 
-        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:30px;">Sıradakine Geç ➔</button>
+        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">Sıradakine Geç ➔</button>
     </div>
 </div>
 
@@ -72,7 +69,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    const AGORA_ID = "0305c3f1fade43beaec2e13a29e19467";
+    // --- YAPILANDIRMA ---
+    const AGORA_APP_ID = "0305c3f1fade43beaec2e13a29e19467";
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
@@ -85,111 +83,110 @@
     const db = getDatabase(app);
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    let myName = "", myColor = "#ef4444", gameCode = "", localTrack = null;
+    let myName = "", myColor = "#ef4444", gameCode = "", localAudioTrack = null;
 
-    // Renk Seçimi
+    // Renk Seçici Ayarı
     document.querySelectorAll('.color-opt').forEach(opt => {
         opt.onclick = () => {
-            document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
+            document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('selected'));
             opt.classList.add('selected');
-            myColor = opt.dataset.c;
+            myColor = opt.dataset.color;
         };
     });
 
-    // SES SİSTEMİ (Mute/Unmute Mantığı)
-    async function setupVoice(roomName) {
-        await client.join(AGORA_ID, roomName, null, null);
-        localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        await localTrack.setEnabled(false); // Başlangıçta sessiz
-        await client.publish([localTrack]);
+    // --- SES SİSTEMİ (MUTE/UNMUTE MANTIĞI) ---
+    async function setupVoice(room) {
+        await client.join(AGORA_APP_ID, room, null, null);
+        localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        await localAudioTrack.setEnabled(false); // Başlangıçta mikrofon kapalı
+        await client.publish([localAudioTrack]);
 
         client.on("user-published", async (user, type) => {
             await client.subscribe(user, type);
             if (type === "audio") user.audioTrack.play();
         });
-        document.getElementById('status').innerText = "🎙️ Ses Hazır (Sessiz)";
     }
 
-    // Bas-Konuş Tetikleyicileri
     const micBtn = document.getElementById('micBtn');
-    const startTalking = async () => {
-        if(localTrack) {
-            await localTrack.setEnabled(true);
-            micBtn.classList.add('talking');
-            document.getElementById('micStatus').innerText = "SESİN GİDİYOR...";
+    const startMic = async () => {
+        if(localAudioTrack) {
+            await localAudioTrack.setEnabled(true);
+            micBtn.classList.add('active-mic');
+            document.getElementById('micHint').innerText = "SESİN GİDİYOR...";
         }
     };
-    const stopTalking = async () => {
-        if(localTrack) {
-            await localTrack.setEnabled(false);
-            micBtn.classList.remove('talking');
-            document.getElementById('micStatus').innerText = "Basılı Tutarak Konuş";
+    const stopMic = async () => {
+        if(localAudioTrack) {
+            await localAudioTrack.setEnabled(false);
+            micBtn.classList.remove('active-mic');
+            document.getElementById('micHint').innerText = "Basılı Tutarak Konuş";
         }
     };
 
-    micBtn.onmousedown = startTalking;
-    micBtn.onmouseup = stopTalking;
-    micBtn.ontouchstart = startTalking;
-    micBtn.ontouchend = stopTalking;
+    // Bas-Konuş Olayları
+    micBtn.onmousedown = startMic;
+    micBtn.onmouseup = stopMic;
+    micBtn.ontouchstart = startMic;
+    micBtn.ontouchend = stopMic;
 
-    // GİRİŞ
-    document.getElementById('btnEnter').onclick = async () => {
-        myName = document.getElementById('nick').value.trim();
-        let c = document.getElementById('room').value.trim().toUpperCase();
-        if(!myName) return alert("İsim yaz!");
+    // Oyuna Giriş
+    document.getElementById('btnJoin').onclick = async () => {
+        myName = document.getElementById('nickInput').value.trim();
+        let code = document.getElementById('codeInput').value.trim().toUpperCase();
+        if(!myName) return alert("İsim yazın!");
 
-        gameCode = c || Math.random().toString(36).substring(2,6).toUpperCase();
-        if(!c) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
+        gameCode = code || Math.random().toString(36).substring(2,6).toUpperCase();
+        if(!code) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
 
         await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
         await setupVoice(gameCode);
         
         document.getElementById('homeScreen').classList.remove('active');
         document.getElementById('gameScreen').classList.add('active');
-        listen();
+        listenGame();
     };
 
-    function listen() {
+    function listenGame() {
         onValue(ref(db, `games/${gameCode}`), (snap) => {
             const data = snap.val();
             if(!data) return;
 
-            if(data.status === 'waiting' && myName === data.moderator) {
-                document.getElementById('btnNext').style.display = 'block';
-                document.getElementById('btnNext').innerText = "OYUNU BAŞLAT";
-            }
-
             if(data.status === 'playing') {
                 const activeName = data.playerOrder[data.turn];
-                const activeP = Object.values(data.players).find(p => p.name === activeName);
+                const activePlayer = Object.values(data.players).find(p => p.name === activeName);
                 
-                document.getElementById('activeName').innerText = activeName;
-                if(activeP) document.getElementById('turnPanel').style.backgroundColor = activeP.color;
-
-                const box = document.getElementById('wordBox');
-                box.innerText = (data.impostor === myName) ? "🎭 İMPOSTORSUN!" : "Kelime: " + data.word;
+                // Sırası gelenin rengi ekranı kaplar
+                const turnPanel = document.getElementById('turnPanel');
+                document.getElementById('activePlayerName').innerText = activeName;
+                if(activePlayer) turnPanel.style.background = activePlayer.color;
+                
+                const wordBox = document.getElementById('wordDisplay');
+                wordBox.innerText = (data.impostor === myName) ? "🎭 İMPOSTORSUN!" : "Kelime: " + data.word;
                 
                 document.getElementById('btnNext').style.display = (myName === data.moderator) ? 'block' : 'none';
                 document.getElementById('btnNext').innerText = "Sıradakine Geç ➔";
+            } else if(data.status === 'waiting' && myName === data.moderator) {
+                document.getElementById('btnNext').style.display = 'block';
+                document.getElementById('btnNext').innerText = "OYUNU BAŞLAT";
             }
         });
     }
 
     document.getElementById('btnNext').onclick = async () => {
-        const s = await get(ref(db, `games/${gameCode}`));
-        const d = s.val();
+        const snap = await get(ref(db, `games/${gameCode}`));
+        const data = snap.val();
         
-        if(d.status === 'waiting') {
-            const players = Object.keys(d.players);
+        if(data.status === 'waiting') {
+            const players = Object.keys(data.players);
             await update(ref(db, `games/${gameCode}`), {
                 status: 'playing',
-                word: "HAYALET",
+                word: "HELİKOPTER",
                 impostor: players[Math.floor(Math.random() * players.length)],
                 playerOrder: players,
                 turn: 0
             });
         } else {
-            await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
+            await update(ref(db, `games/${gameCode}`), { turn: (data.turn + 1) % data.playerOrder.length });
         }
     };
 </script>
