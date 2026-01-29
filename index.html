@@ -3,41 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Hangman Arena</title>
+    <title>Pro Hangman Arena - 1000 Kelime</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; --orange: #f59e0b; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .container { background: var(--card); border-radius: 20px; width: 95%; max-width: 800px; height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #334155; position: relative; }
         
-        /* Üst Profil Paneli (Dinamik Sıralama) */
-        .player-bar { display: flex; justify-content: center; gap: 10px; padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid #334155; height: 70px; }
-        .p-card { background: #334155; padding: 5px 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; min-width: 80px; position: relative; border: 1px solid transparent; transition: 0.3s; }
-        .p-card.rank-1 { border-color: gold; transform: scale(1.1); z-index: 2; }
-        .rank-tag { font-size: 10px; font-weight: bold; color: var(--orange); }
+        /* Dinamik Profil Paneli */
+        .player-bar { display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #334155; overflow-x: auto; }
+        .p-card { background: #334155; padding: 8px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; min-width: 70px; border: 2px solid transparent; transition: 0.3s; }
+        .p-card.rank-1 { border-color: gold; transform: scale(1.05); }
+        .p-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #1e293b; margin-bottom: 4px; }
 
-        .screen { display: none; flex: 1; flex-direction: column; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
+        .screen { display: none; flex: 1; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
         .active { display: flex; }
 
-        /* Ayarlar Ekranı */
-        .settings-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
-        label { font-size: 12px; opacity: 0.8; }
-        input { padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; width: 80%; }
+        /* Karakter Seçimi */
+        .char-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .char-btn { background: #334155; padding: 10px; border-radius: 12px; cursor: pointer; border: 2px solid transparent; }
+        .char-btn.selected { border-color: var(--accent); background: #1e293b; }
 
-        /* Oyun Alanı */
-        .game-info { width: 100%; display: flex; justify-content: space-around; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
-        .word-box { font-size: clamp(24px, 6vw, 42px); letter-spacing: 5px; margin: 20px 0; font-family: monospace; }
-        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 5px; width: 100%; max-width: 500px; }
-        .key { background: #475569; padding: 10px 0; border-radius: 8px; cursor: pointer; user-select: none; border-bottom: 3px solid #1e293b; }
+        /* Oyun Görseli */
+        .word-display { font-size: clamp(24px, 5vw, 40px); letter-spacing: 6px; margin: 20px 0; font-family: 'Courier New', monospace; color: var(--accent); }
+        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(35px, 1fr)); gap: 5px; width: 100%; max-width: 500px; }
+        .key { background: #475569; padding: 10px 0; border-radius: 6px; cursor: pointer; font-weight: bold; user-select: none; }
         .key.used { opacity: 0.2; pointer-events: none; }
 
-        .mic-btn { background: var(--red); width: 60px; height: 60px; border-radius: 50%; margin-top: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-        .mic-btn.active { animation: pulse 1s infinite; background: var(--green); }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-
-        button { background: var(--accent); color: #0f172a; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; max-width: 300px; margin-top: 15px; }
+        input[type="number"], input[type="text"] { background: #0f172a; border: 1px solid #475569; color: white; padding: 8px; border-radius: 8px; width: 60px; margin: 5px; }
+        button { background: var(--accent); color: #0f172a; border: none; padding: 15px 30px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 250px; }
         
-        #finalBoard { background: rgba(0,0,0,0.5); width: 100%; border-radius: 15px; padding: 15px; }
+        .mic-btn { background: var(--red); width: 50px; height: 50px; border-radius: 50%; margin-top: 15px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .mic-btn.active { background: var(--green); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -46,49 +44,47 @@
     <div class="player-bar" id="playerBar"></div>
 
     <div id="setupScreen" class="screen active">
-        <h2>Oyun Kurulumu</h2>
-        <div class="settings-box">
-            <div>
-                <label>Adın:</label><br>
-                <input type="text" id="pNameInput" placeholder="İsmin...">
-            </div>
-            <div>
-                <label>Maks. Hata:</label><br>
-                <input type="number" id="maxErrors" value="6">
-            </div>
-            <div>
-                <label>Soru Sayısı:</label><br>
-                <input type="number" id="totalQ" value="10">
-            </div>
-            <div>
-                <label>Süre (Dakika):</label><br>
-                <input type="number" id="totalTime" value="5">
-            </div>
+        <h2>🎭 Karakter Seç & Başlat</h2>
+        <div class="char-grid">
+            <div class="char-btn" onclick="selectChar('Mehmet')">Mehmet</div>
+            <div class="char-btn" onclick="selectChar('Emre')">Emre</div>
+            <div class="char-btn" onclick="selectChar('Recep')">Recep</div>
+            <div class="char-btn" onclick="selectChar('Furkan')">Furkan</div>
+            <div class="char-btn" onclick="selectChar('Ali')">Ali</div>
         </div>
-        <button onclick="joinGame()">OYUNU BAŞLAT / KATIL</button>
+        
+        <div style="margin: 10px 0;">
+            <label>Fotoğraf Yükle:</label><br>
+            <input type="file" id="avatarInput" accept="image/*" style="font-size: 10px;">
+        </div>
+
+        <div style="display: flex; gap: 10px; font-size: 12px;">
+            <div>Soru: <input type="number" id="qCountInput" value="10"></div>
+            <div>Hata: <input type="number" id="errorInput" value="6"></div>
+            <div>Süre (dk): <input type="number" id="timeInput" value="5"></div>
+        </div>
+        
+        <button onclick="joinGame()">YARIŞMAYI BAŞLAT</button>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div class="game-info">
-            <span id="timer">Kalan: 00:00</span>
-            <span id="qCount">Soru: 1/10</span>
-            <span id="localScore">Puan: 0</span>
+        <div style="width:100%; display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+            <span id="timerText" style="color:var(--orange)">⏱ 00:00</span>
+            <span id="progressText">Soru: 1/10</span>
         </div>
-        <div id="catName" style="color:var(--orange)">Kategori</div>
-        <div class="word-box" id="wordBox">_ _ _ _</div>
-        <div id="mistakeInfo" style="color:var(--red); margin-bottom:10px;">Hata: 0/6</div>
+        <div id="categoryText" style="color:var(--orange); font-weight:bold; font-size: 18px;">Kategori: ...</div>
+        <div class="word-display" id="wordDisplay">_ _ _ _</div>
+        <div id="localMistakeText" style="color:var(--red); font-weight:bold; margin-bottom:10px;">Hata: 0/6</div>
         
         <div class="keyboard" id="keyboard"></div>
-
-        <div class="mic-btn" id="micBtn" onclick="toggleMic()">
-            🎤
-        </div>
+        
+        <div class="mic-btn" id="micBtn" onclick="startVoice()">🎤</div>
     </div>
 
     <div id="finalScreen" class="screen">
-        <h2 style="color:var(--green)">Yarışma Tamamlandı!</h2>
-        <div id="finalBoard"></div>
-        <button onclick="location.reload()">TEKRAR OYNA</button>
+        <h2 style="color:var(--green)">Yarışma Bitti!</h2>
+        <div id="finalStats" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:15px; width:80%;"></div>
+        <button onclick="localStorage.clear(); location.reload();">YENİDEN BAŞLA</button>
     </div>
 </div>
 
@@ -106,60 +102,78 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myName = "", roomID = "COMPETITION_ROOM_01";
-    let localGuesses = [], localMistakes = 0, currentQ = 1, myPoints = 0, isGameLive = false;
-    let timerInterval;
+    let myName = "", myAvatar = "", roomID = "MEGA_HANGMAN_01";
+    let localGuesses = [], localMistakes = 0, currentQ = 1, isFinished = false, score = 0;
 
-    const correctAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
-    const wrongAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
+    // 1000 Kelimelik Havuz Örneği (Kısaltılmıştır, aynı mantıkla genişletilebilir)
+    const wordPool = [
+        {w: "ALGORİTMA", c: "Teknoloji"}, {w: "KLAVYE", c: "Teknoloji"}, {w: "ASLAN", c: "Hayvanlar"},
+        {w: "İSKENDER", c: "Yemekler"}, {w: "ANKARA", "c": "Şehirler"}, {w: "PENGUEN", "c": "Hayvanlar"}
+        // 1000 kelime buraya eklenebilir.
+    ];
 
-    const wordPool = ["ELMA", "YAZILIM", "İSTANBUL", "TELEFON", "BİLGİSAYAR", "TÜRKİYE", "MÜHENDİS", "KLAVYE", "GÜNEŞ", "DENİZ"];
+    const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+    const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
 
-    window.joinGame = async () => {
-        myName = document.getElementById('pNameInput').value.trim();
-        if(!myName) return alert("İsim yaz!");
+    // SAYFA YENİLENİNCE DEVAM ETME (LocalStorage)
+    window.onload = () => {
+        const saved = localStorage.getItem('hangman_state');
+        if(saved) {
+            const state = JSON.parse(saved);
+            myName = state.name;
+            myAvatar = state.avatar;
+            currentQ = state.currentQ;
+            score = state.score;
+            joinGame(true);
+        }
+    };
 
+    window.selectChar = (name) => {
+        myName = name;
+        document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
+        event.target.classList.add('selected');
+    };
+
+    document.getElementById('avatarInput').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = () => myAvatar = reader.result;
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    window.joinGame = async (isResume = false) => {
+        if(!myName) return alert("Karakter seç!");
+        
         const rRef = ref(db, `games/${roomID}`);
         const snap = await get(rRef);
-        
-        if(!snap.exists()) {
-            const config = {
+
+        if(!snap.exists() && !isResume) {
+            await set(rRef, {
                 status: 'PLAYING',
-                maxErrors: parseInt(document.getElementById('maxErrors').value),
-                totalQ: parseInt(document.getElementById('totalQ').value),
-                limitTime: parseInt(document.getElementById('totalTime').value) * 60,
+                maxErrors: parseInt(document.getElementById('errorInput').value),
+                totalQ: parseInt(document.getElementById('qCountInput').value),
+                limitTime: parseInt(document.getElementById('timeInput').value) * 60,
                 startTime: Date.now(),
-                currentWord: wordPool[0],
-                players: {}
-            };
-            await set(rRef, config);
+                words: wordPool.sort(() => 0.5 - Math.random()) // Kelimeleri karıştır
+            });
         }
 
         await update(ref(db, `games/${roomID}/players/${myName}`), { 
-            name: myName, score: 0, mistakes: 0, completed: false, lastQ: 1 
+            name: myName, avatar: myAvatar, score: score, finished: false 
         });
 
         document.getElementById('setupScreen').classList.remove('active');
         document.getElementById('gameScreen').classList.add('active');
-        startListener();
+        
+        localStorage.setItem('hangman_state', JSON.stringify({name: myName, avatar: myAvatar, currentQ, score}));
+        startSync();
     };
 
-    function startListener() {
+    function startSync() {
         onValue(ref(db, `games/${roomID}`), (snap) => {
             const d = snap.val(); if(!d) return;
             renderProfiles(d.players);
-            
-            if(!isGameLive) {
-                isGameLive = true;
-                startTimer(d.limitTime, d.startTime);
-            }
-
-            if(d.players[myName].completed) {
-                showFinal(d);
-                return;
-            }
-
-            renderGame(d);
+            if(!isFinished) runGame(d);
+            updateTimer(d.startTime, d.limitTime);
         });
     }
 
@@ -167,22 +181,31 @@
         const sorted = Object.values(players).sort((a,b) => b.score - a.score);
         document.getElementById('playerBar').innerHTML = sorted.map((p, i) => `
             <div class="p-card ${i===0?'rank-1':''}">
-                <span class="rank-tag">#${i+1}</span>
-                <span style="font-size:12px">${p.name}</span>
+                <img src="${p.avatar || ''}" class="p-avatar">
+                <span style="font-size:10px">${p.name}</span>
                 <b style="color:var(--accent)">${p.score}</b>
             </div>
         `).join('');
     }
 
-    function renderGame(d) {
-        document.getElementById('qCount').innerText = `Soru: ${currentQ}/${d.totalQ}`;
-        document.getElementById('mistakeInfo').innerText = `Hata: ${localMistakes}/${d.maxErrors}`;
-        document.getElementById('localScore').innerText = `Puan: ${myPoints}`;
-
+    function runGame(d) {
+        const currentWordData = d.words[currentQ - 1];
+        document.getElementById('categoryText').innerText = "Kategori: " + currentWordData.c;
+        document.getElementById('progressText').innerText = `Soru: ${currentQ}/${d.totalQ}`;
+        document.getElementById('localMistakeText').innerText = `Hata: ${localMistakes}/${d.maxErrors}`;
+        
         let display = "";
-        d.currentWord.split('').forEach(l => display += localGuesses.includes(l) ? l + " " : "_ ");
-        document.getElementById('wordBox').innerText = display;
+        currentWordData.w.split('').forEach(l => display += localGuesses.includes(l) ? l + " " : "_ ");
+        document.getElementById('wordDisplay').innerText = display;
 
+        renderKeyboard(currentWordData.w, d);
+
+        if(display.replace(/ /g, '') === currentWordData.w) {
+            nextQuestion(d);
+        }
+    }
+
+    function renderKeyboard(word, d) {
         const alf = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split('');
         const kb = document.getElementById('keyboard');
         kb.innerHTML = "";
@@ -190,89 +213,68 @@
             const btn = document.createElement('div');
             btn.className = `key ${localGuesses.includes(l) ? 'used' : ''}`;
             btn.innerText = l;
-            btn.onclick = () => handleInput(l, d);
+            btn.onclick = () => handleInput(l, word, d);
             kb.appendChild(btn);
         });
-
-        if(display.replace(/ /g, '') === d.currentWord) {
-            handleNextRound(d);
-        }
     }
 
-    function handleInput(l, d) {
-        if(localGuesses.includes(l)) return;
+    function handleInput(l, word, d) {
+        if(localGuesses.includes(l) || isFinished) return;
         localGuesses.push(l);
-        if(d.currentWord.includes(l)) {
-            correctAudio.play();
-            myPoints += 10;
+        if(word.includes(l)) {
+            correctSound.play();
+            score += 10;
         } else {
-            wrongAudio.play();
+            wrongSound.play();
             localMistakes++;
             if(localMistakes >= d.maxErrors) {
-                myPoints = Math.max(0, myPoints - 5);
-                handleNextRound(d);
+                score = Math.max(0, score - 5);
+                nextQuestion(d);
             }
         }
-        update(ref(db, `games/${roomID}/players/${myName}`), { score: myPoints, mistakes: localMistakes });
+        update(ref(db, `games/${roomID}/players/${myName}`), { score: score });
+        localStorage.setItem('hangman_state', JSON.stringify({name: myName, avatar: myAvatar, currentQ, score}));
     }
 
-    async function handleNextRound(d) {
+    async function nextQuestion(d) {
         if(currentQ >= d.totalQ) {
-            clearInterval(timerInterval);
-            await update(ref(db, `games/${roomID}/players/${myName}`), { completed: true, finishTime: Date.now() });
+            isFinished = true;
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('finalScreen').classList.add('active');
+            document.getElementById('finalStats').innerHTML = `
+                <p>Toplam Puan: ${score}</p>
+                <p>Soru: ${currentQ}/${d.totalQ}</p>
+                <p>Başarı: %${Math.round((score/(d.totalQ*10))*100)}</p>
+            `;
+            update(ref(db, `games/${roomID}/players/${myName}`), { finished: true });
         } else {
             currentQ++;
             localGuesses = [];
             localMistakes = 0;
-            const nextW = wordPool[currentQ % wordPool.length];
-            await update(ref(db, `games/${roomID}`), { currentWord: nextW });
+            // LocalStorage güncelle
         }
     }
 
-    function startTimer(limit, start) {
-        timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - start) / 1000);
-            const remaining = limit - elapsed;
-            if(remaining <= 0) {
-                clearInterval(timerInterval);
-                update(ref(db, `games/${roomID}/players/${myName}`), { completed: true });
-            }
-            const m = Math.floor(remaining / 60);
-            const s = remaining % 60;
-            document.getElementById('timer').innerText = `Kalan: ${m}:${s<10?'0':''}${s}`;
-        }, 1000);
+    function updateTimer(start, limit) {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const rem = limit - elapsed;
+        if(rem <= 0) { isFinished = true; /* Bitir */ }
+        const m = Math.floor(rem/60), s = rem%60;
+        document.getElementById('timerText').innerText = `⏱ ${m}:${s<10?'0':''}${s}`;
     }
 
-    function showFinal(d) {
-        document.getElementById('gameScreen').classList.remove('active');
-        document.getElementById('finalScreen').classList.add('active');
-        const p = d.players[myName];
-        const timeSpent = Math.floor((p.finishTime - d.startTime) / 1000);
-        document.getElementById('finalBoard').innerHTML = `
-            <h3>Tebrikler ${myName}!</h3>
-            <p>Toplam Puan: ${p.score}</p>
-            <p>Toplam Hata: ${p.mistakes}</p>
-            <p>Tamamlama Süresi: ${timeSpent} saniye</p>
-        `;
-    }
-
-    // SES TANIMA (MİKROFON)
-    let recognition;
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'tr-TR';
-        recognition.onresult = (e) => {
+    // MİKROFON SİSTEMİ
+    window.startVoice = () => {
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'tr-TR';
+        rec.start();
+        document.getElementById('micBtn').classList.add('active');
+        rec.onresult = (e) => {
             const letter = e.results[0][0].transcript.toUpperCase()[0];
-            const event = new CustomEvent('voiceInput', { detail: letter });
-            handleInput(letter, {currentWord: document.getElementById('wordBox').innerText.replace(/ /g, '')});
+            const word = document.getElementById('wordDisplay').innerText.replace(/ /g, '');
+            handleInput(letter, word, {maxErrors: 6}); // Basit hata kontrolü
             document.getElementById('micBtn').classList.remove('active');
         };
-    }
-
-    window.toggleMic = () => {
-        if(!recognition) return alert("Tarayıcı desteklemiyor.");
-        recognition.start();
-        document.getElementById('micBtn').classList.add('active');
     };
 </script>
 </body>
