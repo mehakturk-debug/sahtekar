@@ -3,46 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adam Asmaca - AI Sunucu Modu</title>
+    <title>Adam Asmaca - Kesin Çözüm</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; --orange: #f59e0b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; }
+        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .screen { display: none; text-align: center; }
         .active { display: block; }
         
-        /* Lobi */
-        .player-list { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin: 15px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        .player-tag { background: var(--accent); color: #0f172a; padding: 6px 15px; border-radius: 20px; font-weight: bold; }
-        
         .char-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
         .char-btn { background: #334155; padding: 12px; border-radius: 12px; cursor: pointer; border: 2px solid transparent; }
-        .char-btn.selected { border-color: var(--accent); background: #1e293b; transform: scale(1.05); }
+        .char-btn.selected { border-color: var(--accent); background: #1e293b; }
         
-        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
-        .btn-start { background: var(--green); margin-top: 10px; }
-
-        /* Oyun Alanı */
-        .header { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; opacity: 0.8; }
-        .cat-box { color: var(--orange); font-weight: bold; font-size: 18px; margin-bottom: 5px; }
-        .word-display { font-size: 36px; letter-spacing: 8px; margin: 25px 0; color: var(--accent); font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .word-display { font-size: 36px; letter-spacing: 8px; margin: 25px 0; color: var(--accent); font-family: monospace; min-height: 50px; }
         
-        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(35px, 1fr)); gap: 6px; }
-        .key { background: #475569; padding: 12px 2px; border-radius: 8px; cursor: pointer; border-bottom: 3px solid #1e293b; font-weight: bold; }
-        .key.used { opacity: 0.2; pointer-events: none; }
+        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(38px, 1fr)); gap: 6px; margin-top: 15px; }
+        .key { background: #475569; padding: 12px 2px; border-radius: 8px; cursor: pointer; font-weight: bold; border-bottom: 3px solid #1e293b; }
+        .key.used { opacity: 0.2; pointer-events: none; background: #1e293b; }
         
-        .scoreboard { margin-top: 25px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; text-align: left; }
-        .score-line { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
-        .winner-flash { color: var(--green); font-weight: bold; }
+        .score-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="loginScreen" class="screen active">
-        <h2 style="color:var(--accent)">🎭 Adam Asmaca Pro</h2>
-        <p>Karakterini seç ve lobiye katıl</p>
+        <h2>Karakterini Seç</h2>
         <div class="char-grid">
             <div class="char-btn" onclick="selectMe('Mehmet')">Mehmet</div>
             <div class="char-btn" onclick="selectMe('Emre')">Emre</div>
@@ -50,32 +37,23 @@
             <div class="char-btn" onclick="selectMe('Furkan')">Furkan</div>
             <div class="char-btn" onclick="selectMe('Ali')">Ali</div>
         </div>
-        <button id="joinBtn">LOBİYE GİR</button>
-    </div>
-
-    <div id="lobbyScreen" class="screen">
-        <h3>Lobi</h3>
-        <div class="player-list" id="lobbyList"></div>
-        <div id="adminPanel" style="display:none">
-            <button class="btn-start" onclick="nextQuestion()">OYUNU / SIRADAKİ SORUYU BAŞLAT</button>
-        </div>
-        <p style="font-size:12px; opacity:0.6">Soruları sistem otomatik sorar.</p>
+        <button id="joinBtn">OYUNA KATIL</button>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div class="header">
-            <span id="pDisplay"></span>
-            <span id="timerDisplay">⏱ 00s</span>
+        <div id="adminPanel" style="display:none; margin-bottom: 20px;">
+            <button style="background:var(--green)" onclick="nextQuestion()">YENİ KELİME SOR</button>
         </div>
-        <div class="cat-box" id="categoryDisplay">Kategori: ...</div>
-        <div class="word-display" id="wordDisplay">_ _ _ _</div>
+        
+        <div id="categoryDisplay" style="color:var(--orange); font-weight:bold;">Kategori: ...</div>
+        <div class="word-display" id="wordDisplay"></div>
 
         <div id="playArea">
             <div id="mistakeDisplay" style="color:var(--red); font-weight:bold; margin-bottom:10px;">Hata: 0/6</div>
             <div class="keyboard" id="keyboard"></div>
         </div>
 
-        <div class="scoreboard" id="scoreBoard"></div>
+        <div id="scoreBoard" style="margin-top:20px; text-align:left; background:rgba(0,0,0,0.2); padding:15px; border-radius:15px;"></div>
     </div>
 </div>
 
@@ -93,15 +71,12 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myName = "", roomID = "SERVER_GAME_01", localGuesses = [], localMistakes = 0, isFinished = false;
+    let myName = "", roomID = "SERVER_GAME_V2", localGuesses = [], localMistakes = 0, isFinished = false;
 
-    // 1000 KELİMELİK HAVUZ (Örnek Gruplar)
     const wordPool = {
-        "Teknoloji": ["YAZILIM", "ALGORİTMA", "VERİTABANI", "BİLGİSAYAR", "İNTERNET", "YAPAYZEKA", "BLOCKCHAIN", "TELEFON", "DONANIM", "KODLAMA"],
-        "Hayvanlar": ["ASLAN", "FİL", "ZÜRAFA", "PENGUEN", "KAPLAN", "KARTAL", "BALİNA", "TİMSAH", "KANGURU", "KAPLUMBAĞA"],
-        "Şehirler": ["İSTANBUL", "ANKARA", "İZMİR", "LONDRA", "PARİS", "TOKYO", "BERLİN", "AMSTERDAM", "MOSKOVA", "BARSELONA"],
-        "Yiyecekler": ["BAKLAVA", "LAHMACUN", "İSKENDER", "HAMBURGER", "MAKARNA", "MENEMEN", "PİZZA", "MANTI", "KEBAP", "SÜTLAÇ"]
-        // Not: 1000 kelimeye tamamlamak için bu listeler genişletilebilir.
+        "Teknoloji": ["YAZILIM", "KODLAMA", "KLAVYE", "EKRAN", "İŞLEMCİ"],
+        "Hayvanlar": ["KAPLAN", "ZÜRAFA", "PENGUEN", "KÖPEKBALIĞI"],
+        "Mutfak": ["TENCERE", "KEPÇE", "BUZDOLABI", "FIRIN"]
     };
 
     window.selectMe = (n) => {
@@ -114,99 +89,103 @@
         if(!myName) return alert("İsim seç!");
         const rRef = ref(db, `games/${roomID}`);
         const snap = await get(rRef);
-        
         if(!snap.exists()) {
-            await set(rRef, { status: 'LOBBY', moderator: myName, players: {}, currentWord: "", category: "", winners: [], startTime: 0 });
+            await set(rRef, { status: 'PLAYING', moderator: myName, players: {}, currentWord: "BAŞLIYOR", category: "SİSTEM", winners: [], startTime: Date.now() });
         }
-        
         await update(ref(db, `games/${roomID}/players/${myName}`), { name: myName, score: 0 });
         document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').classList.add('active');
+        document.getElementById('gameScreen').classList.add('active');
         listenData();
     };
 
     function listenData() {
         onValue(ref(db, `games/${roomID}`), (s) => {
             const d = s.val(); if(!d) return;
+            
+            // Eğer moderatörsen butonu göster
+            if(myName === d.moderator) document.getElementById('adminPanel').style.display = 'block';
 
-            if(d.status === 'LOBBY') {
-                document.getElementById('lobbyList').innerHTML = Object.keys(d.players).map(p => `<span class="player-tag">${p}</span>`).join('');
-                if(myName === d.moderator) document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                document.getElementById('lobbyScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
-                handleGame(d);
+            // Kelime değiştiyse (Yeni tura geçildiyse) yerel durumu sıfırla
+            static var lastWord = "";
+            if(d.currentWord !== lastWord) {
+                resetLocalState();
+                lastWord = d.currentWord;
             }
+
+            renderAll(d);
         });
     }
 
-    function handleGame(d) {
-        document.getElementById('pDisplay').innerText = "👤 " + myName;
+    // Ekranı Çizen Ana Fonksiyon
+    function renderAll(d) {
         document.getElementById('categoryDisplay').innerText = "Kategori: " + d.category;
         
-        // Kelime Maskeleme
+        // 1. Kelimeyi Çiz
         let display = "";
-        d.currentWord.split('').forEach(l => display += localGuesses.includes(l) ? l + " " : "_ ");
+        d.currentWord.split('').forEach(l => {
+            display += localGuesses.includes(l) ? l + " " : "_ ";
+        });
         document.getElementById('wordDisplay').innerText = display;
 
-        // Klavye Oluşturma
+        // 2. Klavyeyi Çiz
         const alf = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split('');
-        document.getElementById('keyboard').innerHTML = alf.map(l => `
-            <div class="key ${localGuesses.includes(l) ? 'used' : ''}" onclick="makeGuess('${l}', '${d.currentWord}')">${l}</div>
-        `).join('');
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = "";
+        alf.forEach(l => {
+            const btn = document.createElement('div');
+            btn.className = `key ${localGuesses.includes(l) ? 'used' : ''}`;
+            btn.innerText = l;
+            btn.onclick = () => handleGuess(l, d.currentWord, d);
+            kb.appendChild(btn);
+        });
 
-        // Skor Tablosu
-        const scoresHtml = Object.values(d.players).sort((a,b)=>b.score - a.score).map(p => `
-            <div class="score-line">
-                <span>${p.name} ${d.winners?.includes(p.name) ? '✅' : ''}</span>
-                <b>${p.score}</b>
-            </div>
-        `).join('');
-        document.getElementById('scoreBoard').innerHTML = "<b>Sıralama:</b>" + scoresHtml;
+        // 3. Skorları Çiz
+        document.getElementById('scoreBoard').innerHTML = "<b>Skorlar:</b>" + 
+            Object.values(d.players).sort((a,b)=>b.score - a.score).map(p => `
+                <div class="score-line"><span>${p.name} ${d.winners?.includes(p.name) ? '✅' : ''}</span><b>${p.score}</b></div>
+            `).join('');
 
-        // Bireysel Kazanma Kontrolü
+        // 4. Kazanma Kontrolü
         if(!isFinished && d.currentWord.split('').every(l => localGuesses.includes(l))) {
             isFinished = true;
             submitWin(d);
         }
     }
 
-    window.makeGuess = (l, word) => {
+    function handleGuess(l, word, d) {
         if(isFinished || localMistakes >= 6) return;
-        localGuesses.push(l);
+        if(localGuesses.includes(l)) return;
+
+        localGuesses.push(l); // Harfi ekle
+        
         if(!word.includes(l)) {
             localMistakes++;
             document.getElementById('mistakeDisplay').innerText = `Hata: ${localMistakes}/6`;
         }
-    };
+
+        renderAll(d); // Ekranı manuel olarak hemen güncelle (Tetikleyici)
+    }
 
     async function submitWin(d) {
         let winners = d.winners || [];
         if(!winners.includes(myName)) {
             winners.push(myName);
             const solveTime = (Date.now() - d.startTime) / 1000;
-            
-            // PUANLAMA: (Hız + Hatasızlık)
             let points = 20 + Math.max(0, Math.floor(60 - solveTime)) + (localMistakes === 0 ? 20 : 0);
             
-            const newScore = (d.players[myName].score || 0) + points;
-            await update(ref(db, `games/${roomID}/players/${myName}`), { score: newScore });
+            await update(ref(db, `games/${roomID}/players/${myName}`), { score: (d.players[myName].score || 0) + points });
             await update(ref(db, `games/${roomID}`), { winners: winners });
         }
     }
 
-    // YENİ SORU (Sadece Moderatör tetikleyebilir)
     window.nextQuestion = async () => {
         const cats = Object.keys(wordPool);
-        const randomCat = cats[Math.floor(Math.random() * cats.length)];
-        const words = wordPool[randomCat];
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-
-        resetLocalState();
+        const c = cats[Math.floor(Math.random() * cats.length)];
+        const w = wordPool[c][Math.floor(Math.random() * wordPool[c].length)];
+        
         await update(ref(db, `games/${roomID}`), {
-            status: 'PLAYING',
-            currentWord: randomWord,
-            category: randomCat,
+            currentWord: w,
+            category: c,
             winners: [],
             startTime: Date.now()
         });
