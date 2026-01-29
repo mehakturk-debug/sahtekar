@@ -3,38 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Ultimate HD</title>
+    <title>İmpostor Pro - Kesin Ses Çözümü</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 950px; height: 90vh; display: flex; gap: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        
-        /* Layout */
         .main-game { flex: 2; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; position: relative; }
         .side-panel { flex: 0.8; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border-left: 1px solid #334155; }
-        
         .screen { display: none; width: 100%; }
         .active { display: block; }
-        
         input, select { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
         button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        /* Sabit Oyuncu Seçimi */
         .player-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-        .player-opt { background: #334155; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .player-opt { background: #334155; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; }
         .player-opt.selected { border-color: var(--accent); background: #1e293b; }
         .avatar-pre { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 5px; background: #475569; }
-
-        /* Oyun Elementleri */
         .turn-box { padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
-        .word-display { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; font-size: 24px; text-align: center; font-weight: bold; margin: 10px 0; border-bottom: 4px solid var(--accent); }
-        
-        #micBtn { width: 110px; height: 110px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 45px; margin: 20px auto; display: block; cursor: not-allowed; opacity: 0.3; transition: 0.3s; outline: none; }
+        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: not-allowed; opacity: 0.3; outline: none; transition: 0.3s; }
         #micBtn.my-turn { cursor: pointer; opacity: 1; background: var(--accent); }
-        #micBtn.recording { background: var(--red); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);} 70% {box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);} 100% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);} }
-
-        /* DM ve Yan Liste */
+        #micBtn.recording { background: var(--red); box-shadow: 0 0 30px var(--red); transform: scale(1.1); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .side-player { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; cursor: pointer; margin-bottom: 8px; background: #334155; }
         .dm-window { position: absolute; bottom: 20px; left: 20px; width: 280px; background: #1e293b; border: 2px solid var(--accent); border-radius: 15px; padding: 15px; display: none; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .dm-msgs { height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
@@ -45,7 +33,7 @@
 <div class="container">
     <div class="main-game">
         <div id="homeScreen" class="screen active">
-            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Pro</h1>
+            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Master</h1>
             <div class="player-grid">
                 <div class="player-opt" data-name="Mehmet"><img src="" class="avatar-pre" id="pre-Mehmet"><span>Mehmet</span></div>
                 <div class="player-opt" data-name="Emre"><img src="" class="avatar-pre" id="pre-Emre"><span>Emre</span></div>
@@ -60,31 +48,28 @@
         </div>
 
         <div id="lobbyScreen" class="screen">
-            <div style="text-align:center; margin-bottom:15px; background:rgba(0,0,0,0.2); padding:10px; border-radius:15px;">
-                <span>Kod: <b id="displayCode" style="color:var(--accent)"></b></span>
-            </div>
+            <h2 style="text-align:center">Kod: <span id="displayCode" style="color:var(--accent)"></span></h2>
             <div id="modPanel" style="display:none; padding:20px; border-radius:20px; border:1px dashed var(--accent);">
                 <select id="catSelect"></select>
-                <button id="btnStart" style="background:var(--green)">OYUNU BAŞLAT</button>
+                <button id="btnStart" style="background:#22c55e">OYUNU BAŞLAT</button>
             </div>
-            <p id="waitMsg" style="text-align:center; margin-top:20px; opacity:0.6">Moderatör oyunu kuruyor...</p>
+            <p id="waitMsg" style="text-align:center; margin-top:20px; opacity:0.6">Moderatör bekleniyor...</p>
         </div>
 
         <div id="gameScreen" class="screen">
             <div id="turnPanel" class="turn-box">
                 <img id="activePhoto" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--accent); object-fit:cover;">
-                <h2 id="activeName" style="margin:10px 0;">Sıra Bekleniyor...</h2>
+                <h2 id="activePlayerName">...</h2>
             </div>
-            <div id="wordBox" class="word-display"></div>
+            <div id="wordBox" style="background:rgba(0,0,0,0.4); padding:20px; border-radius:15px; text-align:center; font-weight:bold; font-size:24px; border-bottom:4px solid var(--accent);"></div>
             <button id="micBtn">🎙️</button>
-            <p id="micHint" style="text-align:center; font-size:12px; color:#94a3b8">Basılı Tut ve Konuş</p>
             <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">SIRADAKİ OYUNCU ➔</button>
         </div>
 
         <div id="dmBox" class="dm-window">
             <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span id="dmUser" style="font-size:12px; font-weight:bold;"></span><button onclick="this.parentElement.parentElement.style.display='none'">X</button></div>
             <div id="dmMsgs" class="dm-msgs"></div>
-            <div style="display:flex; gap:5px;"><input type="text" id="dmIn" placeholder="Mesaj..."><button id="dmSend" style="width:60px; padding:0; margin:0;">GÖNDER</button></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="dmIn" placeholder="Mesaj..."><button id="dmSend" style="width:60px; padding:0;">GÖNDER</button></div>
         </div>
     </div>
 
@@ -108,7 +93,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myName = "", myPhoto = "", gameCode = "", mediaRec, audioChunks = [], targetDM = "";
+    let myName = "", myPhoto = "", gameCode = "", mediaRec, chunks = [], targetDM = "";
 
     const cats = {
         "Meslekler": ["Doktor", "Pilot", "Aşçı", "Mühendis", "Avukat", "Öğretmen", "Polis", "Yazılımcı", "Mimar", "Hemşire"],
@@ -147,29 +132,36 @@
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // --- SES MOTORU (ÇALIŞAN SİSTEM) ---
+    // --- KESİN SES ÇÖZÜMÜ: BLOB CHUNKING ---
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         mediaRec = new MediaRecorder(stream);
-        mediaRec.ondataavailable = e => audioChunks.push(e.data);
+        mediaRec.ondataavailable = e => chunks.push(e.data);
         mediaRec.onstop = () => {
-            const r = new FileReader();
-            r.readAsDataURL(new Blob(audioChunks));
-            r.onloadend = () => {
-                update(ref(db, `games/${gameCode}/lastAudio`), { sender: myName, data: r.result, t: Date.now() });
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                const base64 = reader.result;
+                set(ref(db, `games/${gameCode}/audio`), {
+                    u: myName,
+                    d: base64,
+                    t: Date.now()
+                });
             };
-            audioChunks = [];
+            chunks = [];
         };
-    });
+    }).catch(err => alert("Mikrofon izni verin!"));
 
-    const mBtn = document.getElementById('micBtn');
-    const startMic = () => { if(mBtn.classList.contains('my-turn') && mediaRec) { mediaRec.start(); mBtn.classList.add('recording'); } };
-    const stopMic = () => { if(mediaRec && mediaRec.state !== "inactive") { mediaRec.stop(); mBtn.classList.remove('recording'); } };
-    mBtn.onmousedown = startMic; mBtn.onmouseup = stopMic;
-    mBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); }; mBtn.ontouchend = stopMic;
+    const micBtn = document.getElementById('micBtn');
+    const startMic = () => { if(micBtn.classList.contains('my-turn') && mediaRec) { mediaRec.start(); micBtn.classList.add('recording'); } };
+    const stopMic = () => { if(mediaRec && mediaRec.state !== "inactive") { mediaRec.stop(); micBtn.classList.remove('recording'); } };
+    
+    micBtn.onmousedown = startMic; micBtn.onmouseup = stopMic;
+    micBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); }; micBtn.ontouchend = stopMic;
 
-    // --- OYUN MANTIĞI ---
+    // --- GAME ENGINE ---
     document.getElementById('btnEnter').onclick = async () => {
-        if(!myName) return alert("Kim olduğunu seç!");
+        if(!myName) return alert("İsim seç!");
         gameCode = document.getElementById('roomCode').value.trim().toUpperCase() || Math.random().toString(36).substring(2,6).toUpperCase();
         const snap = await get(ref(db, `games/${gameCode}`));
         if(!snap.exists()) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
@@ -186,12 +178,11 @@
             const d = s.val(); if(!d) return;
             const players = d.players || {};
             
-            // Yan Panel
             const list = document.getElementById('sideList');
             list.innerHTML = Object.values(players).map(p => `
                 <div class="side-player" onclick="openDM('${p.name}')">
-                    <img src="${p.photo}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid var(--accent);">
-                    <span style="font-size:12px; margin-left:10px;">${p.name}</span>
+                    <img src="${p.photo}" class="side-avatar">
+                    <span style="font-size:12px; margin-left:10px;">${p.name} ${p.name === d.moderator ? '👑' : ''}</span>
                 </div>`).join('');
 
             const isMod = myName === d.moderator;
@@ -201,22 +192,21 @@
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
                 const active = d.playerOrder[d.turn];
-                document.getElementById('activeName').innerText = active;
+                document.getElementById('activePlayerName').innerText = active;
                 document.getElementById('activePhoto').src = players[active]?.photo || "";
                 document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
                 
-                if(active === myName) { mBtn.classList.add('my-turn'); document.getElementById('micHint').innerText = "KONUŞABİLİRSİN (Basılı Tut)"; }
-                else { mBtn.classList.remove('my-turn'); document.getElementById('micHint').innerText = "Sıra " + active + " kullanıcısında."; }
+                if(active === myName) { micBtn.classList.add('my-turn'); }
+                else { micBtn.classList.remove('my-turn'); }
                 document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
             }
         });
 
-        // SES OYNATICI
-        onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
+        // SESİ YAKALA VE ÇAL
+        onValue(ref(db, `games/${gameCode}/audio`), (s) => {
             const a = s.val();
-            if(a && a.sender !== myName) {
-                let audio = new Audio(a.data);
-                audio.play();
+            if(a && a.u !== myName) {
+                new Audio(a.d).play();
             }
         });
 
@@ -243,8 +233,7 @@
         const d = s.val();
         const plist = Object.keys(d.players);
         const cat = document.getElementById('catSelect').value;
-        const wordList = cats[cat];
-        const word = wordList[Math.floor(Math.random() * wordList.length)];
+        const word = cats[cat][Math.floor(Math.random() * 10)];
         update(ref(db, `games/${gameCode}`), { status: 'playing', word: word, turn: 0, playerOrder: plist, impostor: plist[Math.floor(Math.random() * plist.length)] });
     };
 
