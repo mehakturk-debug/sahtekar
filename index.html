@@ -3,71 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Full</title>
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+    <title>İmpostor Pro - Sesli Mesaj Sistemi</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background: var(--card); border-radius: 24px; padding: 25px; width: 95%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .color-picker { display: flex; justify-content: space-around; margin: 15px 0; }
-        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-        .selected { border-color: white; transform: scale(1.2); }
-        .player-tag { display: inline-block; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 14px; font-weight: bold; }
-        .turn-area { padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: 0.5s; border: 2px solid rgba(255,255,255,0.1); }
-        #micBtn { width: 80px; height: 80px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 35px; margin: 20px auto; display: block; cursor: pointer; outline: none; }
-        #micBtn.active { background: #ef4444; box-shadow: 0 0 25px #ef4444; transform: scale(1.1); }
-        .mod-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px dashed var(--accent); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
+        button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; display: inline-block; margin: 5px; }
+        .selected { border-color: white; transform: scale(1.1); }
+        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; }
+        #micBtn.recording { background: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);} 70% {box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);} 100% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);} }
+        .turn-area { padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="homeScreen" class="screen active">
-        <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor</h1>
+        <h1 style="text-align:center">🎭 İmpostor</h1>
         <input type="text" id="nick" placeholder="Nickname">
-        <input type="text" id="room" placeholder="Oyun Kodu (Katılmak için)">
-        <p style="text-align:center; font-size:14px;">Rengini Seç:</p>
-        <div class="color-picker">
+        <input type="text" id="room" placeholder="Oyun Kodu">
+        <div id="colorPicker" style="text-align:center">
             <div class="color-opt" style="background:#ef4444" data-c="#ef4444"></div>
             <div class="color-opt" style="background:#22c55e" data-c="#22c55e"></div>
             <div class="color-opt" style="background:#3b82f6" data-c="#3b82f6"></div>
             <div class="color-opt" style="background:#eab308" data-c="#eab308"></div>
-            <div class="color-opt" style="background:#a855f7" data-c="#a855f7"></div>
         </div>
-        <button id="btnJoin">LOBİYE GİRİŞ YAP</button>
-    </div>
-
-    <div id="lobbyScreen" class="screen">
-        <h2 style="text-align:center">Oyun Kodu: <span id="roomDisplay" style="color:var(--accent)"></span></h2>
-        <div id="playerList" style="text-align:center; margin:20px 0; min-height: 50px;"></div>
-        
-        <div id="modPanel" style="display:none" class="mod-box">
-            <p style="margin:0; font-weight:bold; color:var(--accent)">🔧 Moderatör Paneli</p>
-            <select id="category">
-                <option value="Hayvanlar">🐾 Hayvanlar</option>
-                <option value="Eşyalar">🏠 Eşyalar</option>
-                <option value="Yemekler">🍕 Yemekler</option>
-            </select>
-            <button id="btnStart" style="background:#22c55e">OYUNU BAŞLAT</button>
-        </div>
-        <p id="waitText" style="text-align:center; color:#94a3b8; display:none">Moderatörün başlatması bekleniyor...</p>
+        <button id="btnJoin">OYUNA GİR</button>
     </div>
 
     <div id="gameScreen" class="screen">
+        <div id="roomInfo" style="text-align:center; font-size:12px; opacity:0.6"></div>
         <div id="turnPanel" class="turn-area">
-            <h2 id="activeName">Sıra Kimde?</h2>
-            <p style="margin:0; opacity:0.8">Sıra Onda!</p>
+            <h2 id="activeName">Bekleniyor...</h2>
         </div>
-        <div id="wordBox" style="background:rgba(0,0,0,0.3); padding:20px; border-radius:15px; text-align:center; font-size:22px; font-weight:bold;"></div>
+        <div id="wordBox" style="text-align:center; padding:15px; background:rgba(0,0,0,0.2); border-radius:10px; margin:10px 0;"></div>
         
         <button id="micBtn">🎙️</button>
-        <p style="text-align:center; font-size:12px; color:#94a3b8">Basılı Tutarak Konuş</p>
+        <p style="text-align:center; font-size:12px; color:#94a3b8">Basılı Tut - Konuş - Bırak</p>
         
-        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">Sıradakine Geç ➔</button>
+        <button id="btnNext" style="display:none; background:#f59e0b">SIRADAKİNE GEÇ ➔</button>
     </div>
 </div>
 
@@ -75,7 +54,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    const AGORA_ID = "0305c3f1fade43beaec2e13a29e19467";
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
@@ -86,15 +64,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    let myName, myColor = "#ef4444", gameCode, localTrack;
-    const words = {
-        "Hayvanlar": ["Aslan", "Zürafa", "Penguen", "Fil"],
-        "Eşyalar": ["Buzdolabı", "Televizyon", "Ütü", "Lamba"],
-        "Yemekler": ["Lahmacun", "Hamburger", "Mantı", "Pizza"]
-    };
+    let myName, myColor = "#ef4444", gameCode, mediaRecorder, audioChunks = [];
 
+    // Renk Seçimi
     document.querySelectorAll('.color-opt').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
@@ -103,92 +76,87 @@
         };
     });
 
-    async function setupVoice(room) {
-        try {
-            await client.join(AGORA_ID, room, null, null);
-            localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-            await localTrack.setEnabled(false);
-            await client.publish([localTrack]);
-            client.on("user-published", async (u, t) => {
-                await client.subscribe(u, t);
-                if (t === "audio") u.audioTrack.play();
-            });
-        } catch (e) { console.error("Ses hatası"); }
-    }
+    // --- SES KAYIT SİSTEMİ ---
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                // Ses verisini Firebase'e gönder
+                update(ref(db, `games/${gameCode}/lastAudio`), {
+                    sender: myName,
+                    data: base64data,
+                    time: Date.now()
+                });
+            };
+            audioChunks = [];
+        };
+    });
 
     const micBtn = document.getElementById('micBtn');
-    const startMic = async () => { if(localTrack) { await localTrack.setEnabled(true); micBtn.classList.add('active'); } };
-    const stopMic = async () => { if(localTrack) { await localTrack.setEnabled(false); micBtn.classList.remove('active'); } };
-    micBtn.onmousedown = startMic; micBtn.onmouseup = stopMic;
-    micBtn.ontouchstart = startMic; micBtn.ontouchend = stopMic;
+    micBtn.onmousedown = () => { if(mediaRecorder) { mediaRecorder.start(); micBtn.classList.add('recording'); }};
+    micBtn.onmouseup = () => { if(mediaRecorder) { mediaRecorder.stop(); micBtn.classList.remove('recording'); }};
+    micBtn.ontouchstart = (e) => { e.preventDefault(); if(mediaRecorder) { mediaRecorder.start(); micBtn.classList.add('recording'); }};
+    micBtn.ontouchend = () => { if(mediaRecorder) { mediaRecorder.stop(); micBtn.classList.remove('recording'); }};
 
+    // GİRİŞ
     document.getElementById('btnJoin').onclick = async () => {
         myName = document.getElementById('nick').value.trim();
         let c = document.getElementById('room').value.trim().toUpperCase();
-        if(!myName) return alert("Nickname gir!");
+        if(!myName) return alert("İsim yaz!");
 
         gameCode = c || Math.random().toString(36).substring(2,6).toUpperCase();
         if(!c) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
 
         await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
-        await setupVoice(gameCode);
-        
         document.getElementById('homeScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').classList.add('active');
-        document.getElementById('roomDisplay').innerText = gameCode;
+        document.getElementById('gameScreen').classList.add('active');
+        document.getElementById('roomInfo').innerText = "Kod: " + gameCode;
 
+        listen();
+    };
+
+    function listen() {
+        // Oyun verilerini dinle
         onValue(ref(db, `games/${gameCode}`), (s) => {
-            const d = s.val();
-            if(!d) return;
+            const d = s.val(); if(!d) return;
 
-            // Oyuncu Listesi
-            const list = document.getElementById('playerList');
-            list.innerHTML = "";
-            Object.values(d.players || {}).forEach(p => {
-                list.innerHTML += `<span class="player-tag" style="background:${p.color}">${p.name}</span>`;
-            });
-
-            // Rol Kontrolü
-            const isMod = myName === d.moderator;
-            document.getElementById('modPanel').style.display = (isMod && d.status === 'waiting') ? 'block' : 'none';
-            document.getElementById('waitText').style.display = (!isMod && d.status === 'waiting') ? 'block' : 'none';
-
-            // Oyun Ekranı
             if(d.status === 'playing') {
-                document.getElementById('lobbyScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
-                
                 const active = d.playerOrder[d.turn];
                 const activeP = Object.values(d.players).find(p => p.name === active);
                 document.getElementById('activeName').innerText = active;
-                if(activeP) document.getElementById('turnPanel').style.background = activeP.color;
-                
+                document.getElementById('turnPanel').style.background = activeP ? activeP.color : "#444";
                 document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
-                document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
+            }
+            document.getElementById('btnNext').style.display = (myName === d.moderator) ? 'block' : 'none';
+        });
+
+        // SESLERİ DİNLE VE OYNAT
+        onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
+            const audio = s.val();
+            if(audio && audio.sender !== myName) {
+                const snd = new Audio(audio.data);
+                snd.play();
             }
         });
-    };
-
-    document.getElementById('btnStart').onclick = async () => {
-        const s = await get(ref(db, `games/${gameCode}`));
-        const d = s.val();
-        const players = Object.keys(d.players);
-        const cat = document.getElementById('category').value;
-        const randomWord = words[cat][Math.floor(Math.random() * words[cat].length)];
-        
-        await update(ref(db, `games/${gameCode}`), {
-            status: 'playing',
-            word: randomWord,
-            impostor: players[Math.floor(Math.random() * players.length)],
-            playerOrder: players,
-            turn: 0
-        });
-    };
+    }
 
     document.getElementById('btnNext').onclick = async () => {
         const s = await get(ref(db, `games/${gameCode}`));
         const d = s.val();
-        await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
+        if(d.status === 'waiting') {
+            const players = Object.keys(d.players);
+            await update(ref(db, `games/${gameCode}`), {
+                status: 'playing', word: "ASLAN", turn: 0, playerOrder: players,
+                impostor: players[Math.floor(Math.random() * players.length)]
+            });
+        } else {
+            await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
+        }
     };
 </script>
 </body>
