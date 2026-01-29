@@ -3,31 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Ses Fix</title>
+    <title>İmpostor Pro - HD Ses & DM</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 950px; height: 90vh; display: flex; gap: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .main-game { flex: 2; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; position: relative; }
-        .side-panel { flex: 0.8; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border-left: 1px solid #334155; }
-        .screen { display: none; width: 100%; }
-        .active { display: block; }
+        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 950px; height: 90vh; display: flex; gap: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid #334155; }
+        
+        .main-game { flex: 2; display: flex; flex-direction: column; position: relative; overflow-y: auto; padding-right: 10px; }
+        .side-panel { flex: 0.8; background: rgba(0,0,0,0.2); border-radius: 20px; padding: 15px; overflow-y: auto; border-left: 1px solid #334155; }
+        
+        .screen { display: none; width: 100%; height: 100%; }
+        .active { display: flex; flex-direction: column; }
+        
         input, select { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
         button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Oyuncu Seçimi */
         .player-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
         .player-opt { background: #334155; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; }
         .player-opt.selected { border-color: var(--accent); background: #1e293b; }
         .avatar-pre { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 5px; background: #475569; }
+
+        /* Oyun İçi */
         .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 15px; font-size: 14px; }
         .turn-box { padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
         .word-display { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; font-size: 24px; text-align: center; font-weight: bold; margin: 10px 0; border-bottom: 4px solid var(--accent); }
+        
         #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: not-allowed; opacity: 0.3; transition: 0.3s; outline: none; }
         #micBtn.my-turn { cursor: pointer; opacity: 1; background: var(--accent); }
         #micBtn.recording { background: var(--red); box-shadow: 0 0 30px var(--red); transform: scale(1.1); }
+
+        /* Yan Panel */
         .side-player { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 8px; background: #334155; }
         .side-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
         .dm-window { position: absolute; bottom: 20px; left: 20px; width: 280px; background: #1e293b; border: 2px solid var(--accent); border-radius: 15px; padding: 15px; display: none; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .dm-msgs { height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
+        .dm-msgs { height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid #334155; }
     </style>
 </head>
 <body>
@@ -35,7 +46,7 @@
 <div class="container">
     <div class="main-game">
         <div id="homeScreen" class="screen active">
-            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Pro</h1>
+            <h1 style="text-align:center; color:var(--accent); margin:0;">🎭 İmpostor Master</h1>
             <div class="player-grid">
                 <div class="player-opt" data-name="Mehmet"><img src="" class="avatar-pre" id="pre-Mehmet"><span>Mehmet</span></div>
                 <div class="player-opt" data-name="Emre"><img src="" class="avatar-pre" id="pre-Emre"><span>Emre</span></div>
@@ -43,41 +54,55 @@
                 <div class="player-opt" data-name="Furkan"><img src="" class="avatar-pre" id="pre-Furkan"><span>Furkan</span></div>
                 <div class="player-opt" data-name="Ali"><img src="" class="avatar-pre" id="pre-Ali"><span>Ali</span></div>
             </div>
-            <button onclick="document.getElementById('photoIn').click()">📷 FOTOĞRAF YÜKLE</button>
+            <button onclick="document.getElementById('photoIn').click()" style="font-size:12px;">📷 FOTOĞRAF YÜKLE / DEĞİŞTİR</button>
             <input type="file" id="photoIn" accept="image/*" style="display:none">
             <input type="text" id="roomCode" placeholder="Oyun Kodu">
             <button id="btnEnter">BAĞLAN</button>
         </div>
 
         <div id="lobbyScreen" class="screen">
-            <div class="header-info"><span>Kod: <b id="displayCode"></b></span><span id="playerCount">0 Oyuncu</span></div>
+            <div class="header-info">
+                <span>Oyun Kodu: <b id="displayCode" style="color:var(--accent)">-</b></span>
+                <span id="playerCount">0 Oyuncu</span>
+            </div>
             <div id="modPanel" style="display:none; padding:20px; border-radius:20px; border:1px dashed var(--accent);">
+                <h3 style="margin-top:0; color:var(--accent)">🔧 Moderatör Ayarları</h3>
                 <select id="catSelect"></select>
                 <button id="btnStart" style="background:var(--green)">OYUNU BAŞLAT</button>
             </div>
-            <p id="waitMsg" style="text-align:center; margin-top:30px;">Moderatör bekleniyor...</p>
+            <p id="waitMsg" style="text-align:center; margin-top:30px; opacity:0.6">Moderatör oyunu kuruyor...</p>
         </div>
 
         <div id="gameScreen" class="screen">
-            <div class="header-info"><span>Kod: <b id="gameCodeDisplay"></b></span><span id="roundDisplay">Aktif Oyun</span></div>
+            <div class="header-info">
+                <span>Kod: <b id="gameCodeDisplay" style="color:var(--accent)">-</b></span>
+                <span>Aktif Oyun</span>
+            </div>
             <div id="turnPanel" class="turn-box">
                 <img id="activePhoto" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--accent); object-fit:cover;">
-                <h2 id="activePlayerName">Sıra Bekleniyor...</h2>
+                <h2 id="activePlayerName" style="margin:10px 0;">Sıra Bekleniyor...</h2>
             </div>
             <div id="wordBox" class="word-display"></div>
             <button id="micBtn">🎙️</button>
+            <p id="micHint" style="text-align:center; font-size:12px; color:#94a3b8">Sıranı Bekle...</p>
             <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">SIRADAKİ OYUNCU ➔</button>
         </div>
 
         <div id="dmBox" class="dm-window">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span id="dmUser" style="font-size:12px;"></span><button onclick="this.parentElement.parentElement.style.display='none'">X</button></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span id="dmUser" style="font-weight:bold; color:var(--accent); font-size:12px;"></span>
+                <button onclick="document.getElementById('dmBox').style.display='none'" style="width:20px; height:20px; padding:0; margin:0;">X</button>
+            </div>
             <div id="dmMsgs" class="dm-msgs"></div>
-            <div style="display:flex; gap:5px;"><input type="text" id="dmIn" placeholder="Mesaj..."><button id="dmSend">></button></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="dmIn" placeholder="Mesaj..." style="margin:0; padding:5px; font-size:12px;">
+                <button id="dmSend" style="width:50px; padding:0; margin:0; font-size:11px;">GÖNDER</button>
+            </div>
         </div>
     </div>
 
     <div class="side-panel">
-        <h4 style="text-align:center; color:var(--accent);">👥 EKİP</h4>
+        <h4 style="text-align:center; margin-top:0; color:var(--accent); border-bottom:1px solid #334155; padding-bottom:10px;">👥 EKİP</h4>
         <div id="sideList"></div>
     </div>
 </div>
@@ -103,9 +128,9 @@
         "Hayvanlar": ["Aslan", "Fil", "Zürafa", "Penguen", "Kaplan", "Maymun", "Yunus", "Kartal", "Kanguru", "Timsah"],
         "Yemekler": ["Mantı", "İskender", "Lahmacun", "Pizza", "Hamburger", "Döner", "Suşi", "Makarna", "Kebap", "Pide"],
         "Şehirler": ["İstanbul", "Ankara", "İzmir", "Londra", "Paris", "New York", "Tokyo", "Roma", "Berlin", "Moskova"],
-        "Eşyalar": ["Televizyon", "Buzdolabı", "Çamaşır Makinesi", "Ütü", "Lamba", "Saat", "Ayna", "Koltuk", "Masa", "Kitaplık"],
-        "Sporlar": ["Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Güreş", "Okçuluk", "Eskrim", "Boks", "Hentbol"],
-        "Diziler": ["Kurtlar Vadisi", "Ezel", "Harry Potter", "Gora", "Ayla", "Game of Thrones", "Breaking Bad", "Sherlock", "Prison Break", "Dark"],
+        "Eşyalar": ["Televizyon", "Buzdolabı", "Ütü", "Lamba", "Saat", "Ayna", "Koltuk", "Masa", "Kitaplık", "Fırın"],
+        "Sporlar": ["Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Güreş", "Okçuluk", "Boks", "Hentbol", "Kayak"],
+        "Diziler": ["Kurtlar Vadisi", "Ezel", "Avrupa Yakası", "Harry Potter", "Gora", "Ayla", "Game of Thrones", "Breaking Bad", "Sherlock", "Dark"],
         "Teknoloji": ["Yapay Zeka", "Robot", "İnternet", "Drone", "Blockchain", "Metaverse", "Bluetooth", "Wi-Fi", "Lazer", "Kripto"],
         "Meyve": ["Elma", "Armut", "Muz", "Çilek", "Karpuz", "Kavun", "Erik", "Kiraz", "Vişne", "Üzüm"],
         "Hobiler": ["Fotoğraf", "Resim", "Gitar", "Kitap", "Kamp", "Balık Tutmak", "Dans", "Yemek", "Bahçe İşleri", "Örgü"]
@@ -135,7 +160,7 @@
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // --- SES MOTORU (FIREBASE ÜZERİNDEN KAYIT/GÖNDER) ---
+    // --- FIREBASE SES MOTORU ---
     async function initAudio() {
         if (!mediaRec) {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -166,8 +191,7 @@
         if(!snap.exists()) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
         await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, photo: myPhoto });
         
-        document.getElementById('homeScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').classList.add('active');
+        showScreen('lobbyScreen');
         document.getElementById('displayCode').innerText = gameCode;
         document.getElementById('gameCodeDisplay').innerText = gameCode;
         listen();
@@ -190,27 +214,28 @@
             document.getElementById('modPanel').style.display = (isMod && d.status === 'waiting') ? 'block' : 'none';
 
             if(d.status === 'playing') {
-                document.getElementById('lobbyScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
+                showScreen('gameScreen');
                 const active = d.playerOrder[d.turn];
                 document.getElementById('activePlayerName').innerText = active;
                 document.getElementById('activePhoto').src = players[active]?.photo || "";
                 document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
                 
-                if(active === myName) { mBtn.classList.add('my-turn'); }
-                else { mBtn.classList.remove('my-turn'); }
+                if(active === myName) { mBtn.classList.add('my-turn'); document.getElementById('micHint').innerText = "KONUŞABİLİRSİN (Basılı Tut)"; }
+                else { mBtn.classList.remove('my-turn'); document.getElementById('micHint').innerText = "Sıra " + active + " kullanıcısında."; }
                 document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
             }
         });
 
+        // SESİ YAKALA VE ÇAL
         onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
             const a = s.val();
             if(a && a.sender !== myName) {
                 let audio = new Audio(a.data);
-                audio.play();
+                audio.play().catch(e => console.log("Otomatik çalma için ekrana bir kez tıkla."));
             }
         });
 
+        // DM DİNLEYİCİ
         onValue(ref(db, `games/${gameCode}/dms/${myName}`), (s) => {
             if(s.exists()) {
                 document.getElementById('dmBox').style.display = 'block';
@@ -242,6 +267,8 @@
         const d = s.val();
         update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
     };
+
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 </script>
 </body>
 </html>
