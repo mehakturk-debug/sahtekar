@@ -3,67 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - HD Ses</title>
+    <title>İmpostor Pro - Ekip Özel</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: var(--card); border-radius: 24px; padding: 25px; width: 95%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .container { background: var(--card); border-radius: 24px; padding: 25px; width: 95%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
         button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; display: inline-block; margin: 5px; }
-        .selected { border-color: white; transform: scale(1.1); box-shadow: 0 0 10px var(--accent); }
-        .player-tag { display: inline-block; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 14px; font-weight: bold; }
-        .turn-area { padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: 0.5s; border: 2px solid rgba(255,255,255,0.1); }
-        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; transition: 0.2s; outline: none; }
+        
+        /* Oyuncu Seçimi ve Fotoğraf */
+        .player-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .player-opt { background: #334155; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .player-opt.selected { border-color: var(--accent); background: #1e293b; }
+        .avatar-preview { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 5px; background: #475569; display: block; }
+        
+        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; transition: 0.2s; }
         #micBtn.recording { background: #ef4444; transform: scale(1.1); box-shadow: 0 0 30px #ef4444; }
-        .mod-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px dashed var(--accent); }
+        .turn-area { padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 15px; position: relative; }
+        .user-photo-large { width: 80px; height: 80px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="homeScreen" class="screen active">
-        <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor HD</h1>
-        <input type="text" id="nick" placeholder="Nickname">
-        <input type="text" id="room" placeholder="Oyun Kodu (Katılmak için)">
-        <div id="colorPicker" style="text-align:center">
-            <div class="color-opt" style="background:#ef4444" data-c="#ef4444"></div>
-            <div class="color-opt" style="background:#22c55e" data-c="#22c55e"></div>
-            <div class="color-opt" style="background:#3b82f6" data-c="#3b82f6"></div>
-            <div class="color-opt" style="background:#eab308" data-c="#eab308"></div>
-            <div class="color-opt" style="background:#a855f7" data-c="#a855f7"></div>
+        <h1 style="text-align:center; color:var(--accent)">🎭 Ekip İmpostor</h1>
+        
+        <p style="text-align:center; font-size:14px;">Kimsin?</p>
+        <div class="player-select-grid" id="playerSelect">
+            <div class="player-opt" data-name="Mehmet">
+                <img src="" class="avatar-preview" id="img-Mehmet"> <span>Mehmet</span>
+            </div>
+            <div class="player-opt" data-name="Emre">
+                <img src="" class="avatar-preview" id="img-Emre"> <span>Emre</span>
+            </div>
+            <div class="player-opt" data-name="Recep">
+                <img src="" class="avatar-preview" id="img-Recep"> <span>Recep</span>
+            </div>
+            <div class="player-opt" data-name="Furkan">
+                <img src="" class="avatar-preview" id="img-Furkan"> <span>Furkan</span>
+            </div>
+            <div class="player-opt" data-name="Ali">
+                <img src="" class="avatar-preview" id="img-Ali"> <span>Ali</span>
+            </div>
         </div>
-        <button id="btnJoin">BAĞLAN</button>
+
+        <div style="text-align:center; margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--accent); cursor:pointer;">
+                📷 Fotoğrafını Yükle/Değiştir
+                <input type="file" id="photoUpload" accept="image/*" style="display:none">
+            </label>
+        </div>
+
+        <input type="text" id="room" placeholder="Oyun Kodu">
+        <button id="btnJoin">BAĞLAN VE GİRİŞ YAP</button>
     </div>
 
     <div id="lobbyScreen" class="screen">
-        <h2 style="text-align:center">Oyun Kodu: <span id="roomDisplay" style="color:var(--accent)"></span></h2>
+        <h2 style="text-align:center">Kod: <span id="roomDisplay" style="color:var(--accent)"></span></h2>
         <div id="playerList" style="text-align:center; margin:20px 0;"></div>
         
-        <div id="modPanel" style="display:none" class="mod-box">
-            <p style="margin:0; font-weight:bold; color:var(--accent)">🔧 Moderatör Ayarları</p>
-            <select id="category">
-                <option value="Hayvanlar">🐾 Hayvanlar</option>
-                <option value="Eşyalar">🏠 Eşyalar</option>
-                <option value="Yemekler">🍕 Yemekler</option>
-            </select>
+        <div id="modPanel" style="display:none; background:rgba(0,0,0,0.2); padding:15px; border-radius:15px;">
+            <p style="color:var(--accent); font-weight:bold">🔧 Moderatör Ayarları</p>
+            <select id="categorySelect"></select>
             <button id="btnStart" style="background:#22c55e">OYUNU BAŞLAT</button>
         </div>
-        <p id="waitText" style="text-align:center; color:#94a3b8; display:none">Moderatör bekleniyor...</p>
     </div>
 
     <div id="gameScreen" class="screen">
         <div id="turnPanel" class="turn-area">
+            <img id="activeUserPhoto" class="user-photo-large" src="">
             <h2 id="activeName">Sıra Kimde?</h2>
         </div>
-        <div id="wordBox" style="text-align:center; padding:15px; background:rgba(0,0,0,0.2); border-radius:15px; font-weight:bold; font-size:20px;"></div>
+        <div id="wordBox" style="text-align:center; padding:15px; background:rgba(0,0,0,0.2); border-radius:10px; font-weight:bold; font-size:22px;"></div>
         
         <button id="micBtn">🎙️</button>
-        <p style="text-align:center; font-size:12px; color:#94a3b8">Basılı Tut - Konuş - Bırak</p>
-        
-        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">Sıradaki Oyuncu ➔</button>
+        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">SIRADAKİ ➔</button>
     </div>
 </div>
 
@@ -82,118 +99,132 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myName, myColor = "#ef4444", gameCode, mediaRecorder, audioChunks = [];
-    const words = {
-        "Hayvanlar": ["Aslan", "Zürafa", "Penguen", "Fil", "Maymun", "Kaplumbağa"],
-        "Eşyalar": ["Buzdolabı", "Televizyon", "Ütü", "Lamba", "Tava", "Gözlük"],
-        "Yemekler": ["Lahmacun", "Hamburger", "Mantı", "Pizza", "Kebap", "Döner"]
+    let myName = "", myPhoto = "", gameCode, mediaRecorder, audioChunks = [];
+
+    // --- KATEGORİ VE KELİMELER (10 Kategori x 30 Kelime) ---
+    const categories = {
+        "Meslekler": ["Doktor", "Pilot", "Aşçı", "Mühendis", "Avukat", "Öğretmen", "Polis", "Yazılımcı", "Mimar", "Hemşire", "Çiftçi", "Berber", "Kaptan", "Büyükelçi", "Gazeteci", "Psikolog", "Sanatçı", "Astronot", "Hakim", "Fırıncı", "Postacı", "Bahçıvan", "Tercüman", "Muhasebeci", "Modacı", "Veteriner", "Dalgıç", "İtfaiyeci", "Garson", "Dedektif"],
+        "Hayvanlar": ["Aslan", "Fil", "Zürafa", "Penguen", "Kaplan", "Maymun", "Yunus", "Kartal", "Kanguru", "Timsah", "Kurt", "Ayı", "Geyik", "Sincap", "Tavşan", "Kedi", "Köpek", "At", "İnek", "Zürafa", "Bukalemun", "Ahtapot", "Balina", "Yılan", "Arı", "Kelebek", "Papağan", "Penguen", "Koala", "Panda"],
+        "Yemekler": ["Mantı", "İskender", "Lahmacun", "Pizza", "Hamburger", "Kuru Fasulye", "Kebap", "Döner", "Suşi", "Makarna", "Baklava", "Pide", "Börek", "Kısır", "Menemen", "Çorba", "Sarma", "Dolma", "Mücver", "Gözleme", "Salata", "Pilav", "Köfte", "İçli Köfte", "Tarhana", "Humus", "Künefe", "Güllaç", "Sütlaç", "Lokum"],
+        "Şehirler": ["İstanbul", "Ankara", "İzmir", "Londra", "Paris", "New York", "Tokyo", "Roma", "Berlin", "Moskova", "Kahire", "Madrid", "Bakü", "Atina", "Amsterdam", "Viyana", "Prag", "Dubai", "Seul", "Pekin", "Sidney", "Venedik", "Barselona", "Lizbon", "Helsinki", "Oslo", "Stokholm", "Varşova", "Budapeşte", "Tahran"],
+        "Eşyalar": ["Televizyon", "Buzdolabı", "Çamaşır Makinesi", "Ütü", "Lamba", "Saat", "Ayna", "Koltuk", "Masa", "Kitaplık", "Bilgisayar", "Telefon", "Kamera", "Radyo", "Gözlük", "Anahtar", "Cüzdan", "Şemsiye", "Bıçak", "Kaşık", "Çatal", "Tabak", "Bardak", "Tencere", "Fırın", "Süpürge", "Tarak", "Fırça", "Yastık", "Battaniye"],
+        "Sporlar": ["Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Güreş", "Okçuluk", "Eskrim", "Boks", "Hentbol", "Bilardo", "Golf", "Kayak", "Sörf", "Satranç", "Bowling", "Atletizm", "Jimnastik", "Karate", "Judo", "Bisiklet", "Binicilik", "Kano", "Rafting", "Yelken", "Dart", "Masa Tenisi", "Badminton", "Dağcılık", "Paten"],
+        "Filmler/Diziler": ["Kurtlar Vadisi", "Ezel", "Avrupa Yakası", "Harry Potter", "Yüzüklerin Efendisi", "Star Wars", "Titanik", "Matrix", "Örümcek Adam", "Batman", "Aslan Kral", "Hababam Sınıfı", "Gora", "Ayla", "Babam ve Oğlum", "Vizontele", "Çiçek Abbas", "Tosun Paşa", "Süt Kardeşler", "Şaban Oğlu Şaban", "Neşeli Günler", "Selvi Boylum Al Yazmalım", "Game of Thrones", "Breaking Bad", "Sherlock", "Prison Break", "La Casa De Papel", "Stranger Things", "Dark", "Friends"],
+        "Teknoloji": ["Yapay Zeka", "Robot", "İnternet", "Mikroçip", "Uydu", "Drone", "Blockchain", "Metaverse", "Bluetooth", "Wi-Fi", "Lazer", "Kripto Para", "Akıllı Saat", "Sanal Gerçeklik", "Yazılım", "Donanım", "Sunucu", "Bulut Bilişim", "Siber Güvenlik", "Algoritma", "Kodlama", "Veritabanı", "İşlemci", "Ekran Kartı", "Anakart", "Klavye", "Fare", "Kulaklık", "Hoparlör", "Yazıcı"],
+        "Meyveler/Sebzeler": ["Elma", "Armut", "Muz", "Çilek", "Karpuz", "Kavun", "Erik", "Kiraz", "Vişne", "Üzüm", "İncir", "Nar", "Portakal", "Mandalina", "Limon", "Domates", "Salatalık", "Biber", "Patlıcan", "Patates", "Soğan", "Sarımsak", "Kabak", "Ispanak", "Pırasa", "Lahana", "Karnabahar", "Brokoli", "Havuç", "Bezelye"],
+        "Hobiler": ["Fotoğraf Çekmek", "Resim Yapmak", "Gitar Çalmak", "Kitap Okumak", "Kamp Yapmak", "Balık Tutmak", "Dans Etmek", "Yemek Pişirmek", "Bahçe İşleri", "Örgü Örmek", "Model Uçak", "Pul Koleksiyonu", "Yürüyüş", "Yoga", "Meditasyon", "Puzzle", "Video Oyunları", "Seyahat Etmek", "Yazı Yazmak", "Heykel Yapmak", "Seramik", "Koleksiyonculuk", "Origami", "Marangozluk", "Dikiş Dikmek", "Kuş Gözlemciliği", "Gökbilim", "Tiyatro", "Sinemaya Gitmek", "Konser İzlemek"]
     };
 
-    // Renk Seçici
-    document.querySelectorAll('.color-opt').forEach(opt => {
+    // --- FOTOĞRAF VE OYUNCU SEÇİMİ SİSTEMİ ---
+    window.onload = () => {
+        const catSelect = document.getElementById('categorySelect');
+        Object.keys(categories).forEach(cat => {
+            let opt = document.createElement('option');
+            opt.value = cat; opt.innerText = cat;
+            catSelect.appendChild(opt);
+        });
+
+        // Kayıtlı fotoğrafları yükle
+        ['Mehmet', 'Emre', 'Recep', 'Furkan', 'Ali'].forEach(name => {
+            const saved = localStorage.getItem('photo-' + name);
+            if(saved) document.getElementById('img-' + name).src = saved;
+        });
+    };
+
+    document.querySelectorAll('.player-opt').forEach(opt => {
         opt.onclick = () => {
-            document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
+            document.querySelectorAll('.player-opt').forEach(e => e.classList.remove('selected'));
             opt.classList.add('selected');
-            myColor = opt.dataset.c;
+            myName = opt.dataset.name;
+            myPhoto = localStorage.getItem('photo-' + myName) || "";
         };
     });
 
-    // --- HD SES SİSTEMİ ---
-    async function startRecording() {
-        if (!mediaRecorder) {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                audio: { 
-                    echoCancellation: true, 
-                    noiseSuppression: true, 
-                    autoGainControl: true 
-                } 
-            });
-            // Ses kalitesini artırmak için bitrate ayarı (webm/opus)
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    update(ref(db, `games/${gameCode}/lastAudio`), {
-                        sender: myName,
-                        data: reader.result,
-                        time: Date.now()
-                    });
-                };
-                audioChunks = [];
+    document.getElementById('photoUpload').onchange = (e) => {
+        if(!myName) return alert("Önce adını seç!");
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            localStorage.setItem('photo-' + myName, reader.result);
+            document.getElementById('img-' + myName).src = reader.result;
+            myPhoto = reader.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // --- SES KAYIT SİSTEMİ ---
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const reader = new FileReader();
+            reader.readAsDataURL(new Blob(audioChunks));
+            reader.onloadend = () => {
+                update(ref(db, `games/${gameCode}/lastAudio`), { sender: myName, data: reader.result, time: Date.now() });
             };
-        }
-        mediaRecorder.start();
-        document.getElementById('micBtn').classList.add('recording');
-    }
+            audioChunks = [];
+        };
+    });
 
-    function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-            mediaRecorder.stop();
-            document.getElementById('micBtn').classList.remove('recording');
-        }
-    }
+    const micBtn = document.getElementById('micBtn');
+    const startRec = () => { if(mediaRecorder) { mediaRecorder.start(); micBtn.classList.add('recording'); } };
+    const stopRec = () => { if(mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } };
+    micBtn.onmousedown = startRec; micBtn.onmouseup = stopRec;
+    micBtn.ontouchstart = (e) => { e.preventDefault(); startRec(); }; micBtn.ontouchend = stopRec;
 
-    const mBtn = document.getElementById('micBtn');
-    mBtn.onmousedown = startRecording; mBtn.onmouseup = stopRecording;
-    mBtn.ontouchstart = (e) => { e.preventDefault(); startRecording(); };
-    mBtn.ontouchend = stopRecording;
-
-    // GİRİŞ & LOBİ SİSTEMİ
+    // --- GİRİŞ VE OYUN MANTIĞI ---
     document.getElementById('btnJoin').onclick = async () => {
-        myName = document.getElementById('nick').value.trim();
+        if(!myName) return alert("Kim olduğunu seçmedin!");
         let c = document.getElementById('room').value.trim().toUpperCase();
-        if(!myName) return alert("Nickname gerekli!");
-
         gameCode = c || Math.random().toString(36).substring(2,6).toUpperCase();
+        
         if(!c) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
+        await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, photo: myPhoto });
 
-        await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
         document.getElementById('homeScreen').classList.remove('active');
         document.getElementById('lobbyScreen').classList.add('active');
         document.getElementById('roomDisplay').innerText = gameCode;
-
-        listenGame();
+        listen();
     };
 
-    function listenGame() {
+    function listen() {
         onValue(ref(db, `games/${gameCode}`), (s) => {
             const d = s.val(); if(!d) return;
-
-            // Lobi Listesi
+            const players = d.players || {};
+            
+            // Lobi oyuncu listesi
             const list = document.getElementById('playerList');
             list.innerHTML = "";
-            Object.values(d.players || {}).forEach(p => {
-                list.innerHTML += `<span class="player-tag" style="background:${p.color}">${p.name}</span>`;
+            Object.values(players).forEach(p => {
+                list.innerHTML += `<div style="display:inline-block; margin:10px; text-align:center;">
+                    <img src="${p.photo}" style="width:50px; height:50px; border-radius:50%; display:block; margin:0 auto; border:2px solid #38bdf8;">
+                    <span style="font-size:12px;">${p.name}</span>
+                </div>`;
             });
 
             const isMod = myName === d.moderator;
             document.getElementById('modPanel').style.display = (isMod && d.status === 'waiting') ? 'block' : 'none';
-            document.getElementById('waitText').style.display = (!isMod && d.status === 'waiting') ? 'block' : 'none';
+            document.getElementById('waitingMsg')?.remove();
+            if(!isMod && d.status === 'waiting') {
+                let p = document.createElement('p'); p.id="waitingMsg"; p.innerText="Moderatör bekleniyor..."; p.style.textAlign="center";
+                document.getElementById('lobbyScreen').appendChild(p);
+            }
 
             if(d.status === 'playing') {
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
-                
                 const active = d.playerOrder[d.turn];
-                const activeP = Object.values(d.players).find(p => p.name === active);
+                const activeP = Object.values(players).find(p => p.name === active);
                 document.getElementById('activeName').innerText = active;
-                if(activeP) document.getElementById('turnPanel').style.background = activeP.color;
-                
+                document.getElementById('activeUserPhoto').src = activeP?.photo || "";
                 document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
                 document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
             }
         });
 
-        // Ses Dinleyici
         onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
             const audio = s.val();
-            if(audio && audio.sender !== myName) {
-                const snd = new Audio(audio.data);
-                snd.play();
-            }
+            if(audio && audio.sender !== myName) new Audio(audio.data).play();
         });
     }
 
@@ -201,8 +232,9 @@
         const s = await get(ref(db, `games/${gameCode}`));
         const d = s.val();
         const players = Object.keys(d.players);
-        const cat = document.getElementById('category').value;
-        const randomWord = words[cat][Math.floor(Math.random() * words[cat].length)];
+        const cat = document.getElementById('categorySelect').value;
+        const wordList = categories[cat];
+        const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
         
         await update(ref(db, `games/${gameCode}`), {
             status: 'playing', word: randomWord, turn: 0, playerOrder: players,
