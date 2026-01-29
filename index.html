@@ -3,85 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Serbest Ses</title>
+    <title>Adam Asmaca - Multiplayer</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 950px; height: 90vh; display: flex; gap: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .main-game { flex: 2; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; position: relative; }
-        .side-panel { flex: 0.8; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border-left: 1px solid #334155; }
-        .screen { display: none; width: 100%; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 800px; min-height: 80vh; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .screen { display: none; }
         .active { display: block; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
         button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Karakter Seçimi */
         .player-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
         .player-opt { background: #334155; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; }
         .player-opt.selected { border-color: var(--accent); background: #1e293b; }
         .avatar-pre { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 5px; background: #475569; }
-        .turn-box { padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
-        .word-display { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; font-size: 24px; text-align: center; font-weight: bold; margin: 10px 0; border-bottom: 4px solid var(--accent); }
-        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: var(--accent); border: none; color: #0f172a; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; transition: 0.3s; outline: none; }
-        #micBtn.recording { background: var(--red); box-shadow: 0 0 30px var(--red); transform: scale(1.1); }
-        .side-player { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 8px; background: #334155; }
-        .dm-window { position: absolute; bottom: 20px; left: 20px; width: 280px; background: #1e293b; border: 2px solid var(--accent); border-radius: 15px; padding: 15px; display: none; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .dm-msgs { height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
+
+        /* Oyun Alanı */
+        .word-display { font-size: 32px; text-align: center; letter-spacing: 10px; margin: 20px 0; font-family: monospace; color: var(--accent); }
+        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 5px; margin-top: 20px; }
+        .key { background: #334155; padding: 10px; border-radius: 5px; text-align: center; cursor: pointer; border: 1px solid #475569; }
+        .key.used { opacity: 0.3; pointer-events: none; }
+        
+        .status-bar { display: flex; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; font-size: 14px; }
+        .hangman-drawing { text-align: center; font-size: 14px; color: var(--red); font-family: monospace; white-space: pre; margin: 10px 0; }
+        #timer { font-weight: bold; color: #f59e0b; }
+        
+        .side-player { display: flex; align-items: center; gap: 10px; padding: 8px; background: #334155; border-radius: 10px; margin-bottom: 5px; }
+        .score-badge { margin-left: auto; background: var(--accent); color: #0f172a; padding: 2px 8px; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-game">
-        <div id="homeScreen" class="screen active">
-            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor HD</h1>
-            <div class="player-grid">
-                <div class="player-opt" data-name="Mehmet"><img src="" class="avatar-pre" id="pre-Mehmet"><span>Mehmet</span></div>
-                <div class="player-opt" data-name="Emre"><img src="" class="avatar-pre" id="pre-Emre"><span>Emre</span></div>
-                <div class="player-opt" data-name="Recep"><img src="" class="avatar-pre" id="pre-Recep"><span>Recep</span></div>
-                <div class="player-opt" data-name="Furkan"><img src="" class="avatar-pre" id="pre-Furkan"><span>Furkan</span></div>
-                <div class="player-opt" data-name="Ali"><img src="" class="avatar-pre" id="pre-Ali"><span>Ali</span></div>
-            </div>
-            <button onclick="document.getElementById('photoIn').click()">📷 FOTOĞRAF YÜKLE</button>
-            <input type="file" id="photoIn" accept="image/*" style="display:none">
-            <input type="text" id="roomCode" placeholder="Oyun Kodu">
-            <button id="btnEnter">SESİ AÇ VE BAĞLAN</button>
+    <div id="homeScreen" class="screen active">
+        <h1 style="text-align:center; color:var(--accent)">🎭 Adam Asmaca Pro</h1>
+        <div class="player-grid">
+            <div class="player-opt" data-name="Mehmet"><span>Mehmet</span></div>
+            <div class="player-opt" data-name="Emre"><span>Emre</span></div>
+            <div class="player-opt" data-name="Recep"><span>Recep</span></div>
+            <div class="player-opt" data-name="Furkan"><span>Furkan</span></div>
+            <div class="player-opt" data-name="Ali"><span>Ali</span></div>
         </div>
-
-        <div id="lobbyScreen" class="screen">
-            <div style="text-align:center; margin-bottom:15px; background:rgba(0,0,0,0.2); padding:10px; border-radius:15px;">Kod: <b id="displayCode"></b></div>
-            <div id="modPanel" style="display:none; padding:20px; border-radius:20px; border:1px dashed var(--accent);">
-                <select id="catSelect"></select>
-                <button id="btnStart" style="background:var(--green)">OYUNU BAŞLAT</button>
-            </div>
-            <p style="text-align:center; opacity:0.6">Giren oyuncuları sağdan görebilirsin.</p>
-        </div>
-
-        <div id="gameScreen" class="screen">
-            <div id="turnPanel" class="turn-box">
-                <img id="activePhoto" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--accent); object-fit:cover;">
-                <h2 id="activePlayerName">Sıra Bekleniyor...</h2>
-            </div>
-            <div id="wordBox" class="word-display"></div>
-            <button id="micBtn">🎙️</button>
-            <p style="text-align:center; font-size:12px; color:#94a3b8">İstediğin Zaman Bas Konuş</p>
-            <button id="btnNext" style="display:none; background:#f59e0b">SIRADAKİ OYUNCU ➔</button>
-        </div>
-
-        <div id="dmBox" class="dm-window">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span id="dmUser"></span><button onclick="this.parentElement.parentElement.style.display='none'">X</button></div>
-            <div id="dmMsgs" class="dm-msgs"></div>
-            <div style="display:flex; gap:5px;"><input type="text" id="dmIn" placeholder="Mesaj..."><button id="dmSend">></button></div>
-        </div>
+        <input type="text" id="roomCode" placeholder="Oyun Kodu (Örn: 1234)" value="1234">
+        <button id="btnEnter">OYUNA KATIL</button>
     </div>
 
-    <div class="side-panel">
-        <h4 style="text-align:center; color:var(--accent);">👥 EKİP</h4>
-        <div id="sideList"></div>
+    <div id="gameScreen" class="screen">
+        <div class="status-bar">
+            <div>Sıra: <b id="turnName">...</b></div>
+            <div id="timer">Süre: 60</div>
+        </div>
+
+        <div id="sideList" style="margin-bottom: 15px;"></div>
+
+        <div class="hangman-drawing" id="hangmanArt">
+          Hata: 0/6
+        </div>
+
+        <div id="wordDisplay" class="word-display">_ _ _ _</div>
+
+        <div id="inputArea" style="display:none">
+            <input type="text" id="secretWord" placeholder="Kelimeyi Yazın" maxlength="15">
+            <button onclick="submitWord()">KELİMEYİ GÖNDER</button>
+        </div>
+
+        <div id="guessArea" style="display:none">
+            <div class="keyboard" id="keyboard"></div>
+        </div>
     </div>
 </div>
 
+
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update, get, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
@@ -93,138 +90,175 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myName = "", myPhoto = "", gameCode = "", mediaRec, audioChunks = [], targetDM = "";
+    let myName = "", gameCode = "", timerInterval;
 
-    const cats = {
-        "Meslekler": ["Doktor", "Pilot", "Aşçı", "Mühendis", "Avukat", "Öğretmen", "Polis", "Yazılımcı", "Mimar", "Hemşire"],
-        "Hayvanlar": ["Aslan", "Fil", "Zürafa", "Penguen", "Kaplan", "Maymun", "Yunus", "Kartal", "Kanguru", "Timsah"],
-        "Yemekler": ["Mantı", "İskender", "Lahmacun", "Pizza", "Hamburger", "Döner", "Suşi", "Makarna", "Kebap", "Pide"],
-        "Şehirler": ["İstanbul", "Ankara", "İzmir", "Londra", "Paris", "New York", "Tokyo", "Roma", "Berlin", "Moskova"],
-        "Eşyalar": ["Televizyon", "Buzdolabı", "Çamaşır Makinesi", "Ütü", "Lamba", "Saat", "Ayna", "Koltuk", "Masa", "Kitaplık"],
-        "Sporlar": ["Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Güreş", "Okçuluk", "Eskrim", "Boks", "Hentbol"],
-        "Diziler": ["Kurtlar Vadisi", "Ezel", "Harry Potter", "Gora", "Ayla", "Game of Thrones", "Breaking Bad", "Sherlock", "Prison Break", "Dark"],
-        "Teknoloji": ["Yapay Zeka", "Robot", "İnternet", "Drone", "Blockchain", "Metaverse", "Bluetooth", "Wi-Fi", "Lazer", "Kripto"],
-        "Meyve": ["Elma", "Armut", "Muz", "Çilek", "Karpuz", "Kavun", "Erik", "Kiraz", "Vişne", "Üzüm"],
-        "Hobiler": ["Fotoğraf", "Resim", "Gitar", "Kitap", "Kamp", "Balık Tutmak", "Dans", "Yemek", "Bahçe İşleri", "Örgü"]
-    };
+    const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
 
-    window.onload = () => {
-        ['Mehmet', 'Emre', 'Recep', 'Furkan', 'Ali'].forEach(n => {
-            const s = localStorage.getItem('photo-'+n);
-            if(s) document.getElementById('pre-'+n).src = s;
-        });
-        const sel = document.getElementById('catSelect');
-        Object.keys(cats).forEach(k => { let o = document.createElement('option'); o.value = k; o.innerText = k; sel.appendChild(o); });
-    };
-
+    // --- SEÇİM MANTIĞI ---
     document.querySelectorAll('.player-opt').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.player-opt').forEach(e => e.classList.remove('selected'));
             opt.classList.add('selected');
             myName = opt.dataset.name;
-            myPhoto = localStorage.getItem('photo-'+myName) || "";
         };
     });
 
-    document.getElementById('photoIn').onchange = (e) => {
-        const r = new FileReader();
-        r.onload = () => { localStorage.setItem('photo-'+myName, r.result); document.getElementById('pre-'+myName).src = r.result; myPhoto = r.result; };
-        r.readAsDataURL(e.target.files[0]);
-    };
-
-    // --- SES SİSTEMİ (HERKES KONUŞABİLİR) ---
-    async function initAudio() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-        mediaRec = new MediaRecorder(stream);
-        mediaRec.ondataavailable = e => audioChunks.push(e.data);
-        mediaRec.onstop = () => {
-            const r = new FileReader();
-            r.readAsDataURL(new Blob(audioChunks));
-            r.onloadend = () => update(ref(db, `games/${gameCode}/lastAudio`), { sender: myName, data: r.result, t: Date.now() });
-            audioChunks = [];
-        };
-    }
-
-    const mBtn = document.getElementById('micBtn');
-    const startMic = async () => { if(!mediaRec) await initAudio(); if(mediaRec.state === "inactive") { mediaRec.start(); mBtn.classList.add('recording'); } };
-    const stopMic = () => { if(mediaRec && mediaRec.state !== "inactive") { mediaRec.stop(); mBtn.classList.remove('recording'); } };
-    mBtn.onmousedown = startMic; mBtn.onmouseup = stopMic;
-    mBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); }; mBtn.ontouchend = stopMic;
-
-    // --- GAME ENGINE ---
     document.getElementById('btnEnter').onclick = async () => {
-        if(!myName) return alert("Kimsin?");
-        gameCode = document.getElementById('roomCode').value.trim().toUpperCase() || Math.random().toString(36).substring(2,6).toUpperCase();
+        if(!myName) return alert("Lütfen karakter seç!");
+        gameCode = document.getElementById('roomCode').value.trim().toUpperCase() || "1234";
+        
         const snap = await get(ref(db, `games/${gameCode}`));
-        if(!snap.exists()) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
-        await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, photo: myPhoto });
+        if(!snap.exists()) {
+            await set(ref(db, `games/${gameCode}`), {
+                status: 'WAITING_FOR_WORD',
+                turnIndex: 0,
+                players: ["Mehmet", "Emre", "Recep", "Furkan", "Ali"],
+                scores: { Mehmet:0, Emre:0, Recep:0, Furkan:0, Ali:0 },
+                currentWord: "",
+                guessedLetters: "",
+                mistakes: 0,
+                lastUpdate: Date.now()
+            });
+        }
         
         document.getElementById('homeScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').classList.add('active');
-        document.getElementById('displayCode').innerText = gameCode;
-        listen();
+        document.getElementById('gameScreen').classList.add('active');
+        startListening();
     };
 
-    function listen() {
-        onValue(ref(db, `games/${gameCode}`), (s) => {
-            const d = s.val(); if(!d) return;
-            const players = d.players || {};
-            document.getElementById('sideList').innerHTML = Object.values(players).map(p => `
-                <div class="side-player" onclick="openDM('${p.name}')">
-                    <img src="${p.photo}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--accent);">
-                    <span style="font-size:12px; margin-left:10px;">${p.name}</span>
-                </div>`).join('');
+    function startListening() {
+        onValue(ref(db, `games/${gameCode}`), (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return;
 
-            const isMod = myName === d.moderator;
-            document.getElementById('modPanel').style.display = (isMod && d.status === 'waiting') ? 'block' : 'none';
+            const turnOwner = data.players[data.turnIndex];
+            document.getElementById('turnName').innerText = turnOwner;
+            
+            // Skor Tablosu
+            document.getElementById('sideList').innerHTML = data.players.map(p => `
+                <div class="side-player">
+                    <span>${p}</span>
+                    <span class="score-badge">${data.scores[p] || 0}</span>
+                </div>
+            `).join('');
 
-            if(d.status === 'playing') {
-                document.getElementById('lobbyScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
-                const active = d.playerOrder[d.turn];
-                document.getElementById('activePlayerName').innerText = active;
-                document.getElementById('activePhoto').src = players[active]?.photo || "";
-                document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
-                document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
+            // Adam Asmaca Çizim/Hata Durumu
+            document.getElementById('hangmanArt').innerText = `Hata: ${data.mistakes}/6`;
+
+            // Oyun Durumu Yönetimi
+            if(data.status === 'WAITING_FOR_WORD') {
+                document.getElementById('wordDisplay').innerText = "KELİME BEKLENİYOR";
+                if(myName === turnOwner) {
+                    document.getElementById('inputArea').style.display = 'block';
+                    document.getElementById('guessArea').style.display = 'none';
+                } else {
+                    document.getElementById('inputArea').style.display = 'none';
+                    document.getElementById('guessArea').style.display = 'none';
+                }
+            } 
+            else if(data.status === 'GUESSING') {
+                document.getElementById('inputArea').style.display = 'none';
+                renderWord(data.currentWord, data.guessedLetters);
+                
+                if(myName === turnOwner) {
+                    document.getElementById('guessArea').style.display = 'none';
+                    document.getElementById('wordDisplay').innerText = data.currentWord + " (Sen Yazdın)";
+                } else {
+                    document.getElementById('guessArea').style.display = 'block';
+                    renderKeyboard(data.guessedLetters);
+                }
             }
-        });
 
-        onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
-            const a = s.val(); if(a && a.sender !== myName) new Audio(a.data).play();
-        });
-
-        onValue(ref(db, `games/${gameCode}/dms/${myName}`), (s) => {
-            if(s.exists()) {
-                document.getElementById('dmBox').style.display = 'block';
-                const msgs = Object.values(s.val());
-                document.getElementById('dmMsgs').innerHTML = msgs.map(m => `<div style="color:var(--accent); margin-bottom:5px;"><b>${m.from}:</b> ${m.txt}</div>`).join('');
-                document.getElementById('dmMsgs').scrollTop = 9999;
-            }
+            // Kazanma/Kaybetme Kontrolü
+            checkGameEnd(data);
         });
     }
 
-    window.openDM = (t) => { if(t === myName) return; targetDM = t; document.getElementById('dmBox').style.display = 'block'; document.getElementById('dmUser').innerText = t + " ile DM"; };
-    document.getElementById('dmSend').onclick = () => {
-        const txt = document.getElementById('dmIn').value.trim();
-        if(!txt) return; push(ref(db, `games/${gameCode}/dms/${targetDM}`), { from: myName, txt: txt });
-        document.getElementById('dmIn').value = "";
+    function renderWord(word, guessed) {
+        let display = "";
+        let winCount = 0;
+        word.split("").forEach(letter => {
+            if(guessed.includes(letter)) {
+                display += letter + " ";
+                winCount++;
+            } else {
+                display += "_ ";
+            }
+        });
+        document.getElementById('wordDisplay').innerText = display;
+        return winCount === word.length;
+    }
+
+    function renderKeyboard(guessed) {
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = "";
+        alphabet.forEach(l => {
+            const btn = document.createElement('div');
+            btn.className = `key ${guessed.includes(l) ? 'used' : ''}`;
+            btn.innerText = l;
+            btn.onclick = () => makeGuess(l);
+            kb.appendChild(btn);
+        });
+    }
+
+    window.submitWord = () => {
+        const word = document.getElementById('secretWord').value.toUpperCase().trim();
+        if(word.length < 2) return alert("Çok kısa!");
+        update(ref(db, `games/${gameCode}`), {
+            currentWord: word,
+            status: 'GUESSING',
+            guessedLetters: "",
+            mistakes: 0
+        });
+        document.getElementById('secretWord').value = "";
     };
 
-    document.getElementById('btnStart').onclick = async () => {
+    async function makeGuess(letter) {
         const s = await get(ref(db, `games/${gameCode}`));
         const d = s.val();
-        const plist = Object.keys(d.players);
-        const cat = document.getElementById('catSelect').value;
-        const wordList = cats[cat];
-        const word = wordList[Math.floor(Math.random() * wordList.length)];
-        update(ref(db, `games/${gameCode}`), { status: 'playing', word: word, turn: 0, playerOrder: plist, impostor: plist[Math.floor(Math.random() * plist.length)] });
-    };
+        let newGuessed = d.guessedLetters + letter;
+        let newMistakes = d.mistakes;
 
-    document.getElementById('btnNext').onclick = async () => {
-        const s = await get(ref(db, `games/${gameCode}`));
-        const d = s.val();
-        update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
-    };
+        if(!d.currentWord.includes(letter)) {
+            newMistakes++;
+        }
+
+        update(ref(db, `games/${gameCode}`), {
+            guessedLetters: newGuessed,
+            mistakes: newMistakes
+        });
+    }
+
+    async function checkGameEnd(data) {
+        if(data.status !== 'GUESSING') return;
+
+        const isWin = data.currentWord.split("").every(l => data.guessedLetters.includes(l));
+        const isLose = data.mistakes >= 6;
+
+        if(isWin || isLose) {
+            let updates = {};
+            const nextIdx = (data.turnIndex + 1) % data.players.length;
+            
+            if(isWin) {
+                // Tahmin edenlere (sırası olmayanlara) puan ver
+                data.players.forEach(p => {
+                    if(p !== data.players[data.turnIndex]) {
+                        updates[`scores/${p}`] = (data.scores[p] || 0) + 10;
+                    }
+                });
+                alert("Kelime Bildi!");
+            } else {
+                alert("Adam Asıldı! Kelime: " + data.currentWord);
+            }
+
+            updates['status'] = 'WAITING_FOR_WORD';
+            updates['turnIndex'] = nextIdx;
+            updates['currentWord'] = "";
+            
+            // Yarım saniye gecikme ile sıfırla ki sonucu görsünler
+            setTimeout(() => update(ref(db, `games/${gameCode}`), updates), 2000);
+        }
+    }
 </script>
 </body>
 </html>
