@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelime İmpostor - Final Fix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; width: 100%; padding: 30px; }
+        .screen { display: none; }
+        .active { display: block; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .player-item { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; border-left: 5px solid #667eea; }
+        .word-box { background: #764ba2; color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0; font-size: 2em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="homeScreen" class="screen active">
+        <h1 style="text-align:center; color:#667eea">🎭 Kelime İmpostor</h1>
+        <input type="text" id="nickInput" placeholder="Nickname">
+        <input type="text" id="codeInput" placeholder="Oyun Kodu (Katılmak için)">
+        <button id="btnJoin">Oyuna Başla</button>
+    </div>
+
+    <div id="lobbyScreen" class="screen">
+        <h2>🎮 Lobi - Kod: <span id="displayCode" style="color:#764ba2"></span></h2>
+        <div id="playersList" style="margin:20px 0"></div>
+        <div id="modSettings" style="display:none">
+            <label>Kategori Seç:</label>
+            <select id="catSelect">
+                <option value="hayvanlar">🐾 Hayvanlar</option>
+                <option value="meyveler">🍎 Meyveler</option>
+                <option value="meslekler">👔 Meslekler</option>
+            </select>
+            <button id="btnStart">Oyunu Başlat</button>
+        </div>
+        <p id="waitText" style="text-align:center; display:none">Moderatörün başlatması bekleniyor...</p>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div id="roleHeader" style="text-align:center; font-weight:bold; font-size:1.5em; margin-bottom:10px"></div>
+        <div id="wordDisplay" class="word-box"></div>
+        <p style="text-align:center; color:#666">Şimdi sırayla anlatmaya başlayın!</p>
+        <button onclick="location.reload()" style="background:#6c757d">Çıkış Yap</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // EKRAN GÖRÜNTÜLERİNDEKİ KESİN BİLGİLER
+    const firebaseConfig = {
+        apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
+        authDomain: "sahtekar-2f5d2.firebaseapp.com",
+        // HATA MESAJINDA YAZAN TAM URL:
+        databaseURL: "https://sahtekar-2f5d2-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "sahtekar-2f5d2",
+        appId: "1:223883537002:web:1c16bde374d11efb5d7813"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let myName = "";
+    let gameCode = "";
+
+    const categories = {
+        hayvanlar: [{w:"Aslan", h:"Orman kralı"}, {w:"Fil", h:"Hortumu var"}, {w:"Zürafa", h:"Boynu uzun"}],
+        meyveler: [{w:"Elma", h:"Kırmızı veya yeşil"}, {w:"Muz", h:"Sarı meyve"}],
+        meslekler: [{w:"Doktor", h:"Hastanede çalışır"}, {w:"Pilot", h:"Uçak uçurur"}]
+    };
+
+    document.getElementById('btnJoin').onclick = async () => {
+        myName = document.getElementById('nickInput').value.trim();
+        let inputCode = document.getElementById('codeInput').value.trim().toUpperCase();
+        if(!myName) return alert("İsim yazın!");
+
+        if(inputCode) {
+            gameCode = inputCode;
+        } else {
+            gameCode = Math.random().toString(36).substring(2,7).toUpperCase();
+            await set(ref(db, games/${gameCode}), { status: 'waiting', moderator: myName });
+        }
+
+        await update(ref(db, games/${gameCode}/players/${myName}), { name: myName });
+        onDisconnect(ref(db, games/${gameCode}/players/${myName})).remove();
+
+        listenToGame();
+        showScreen('lobbyScreen');
+        document.getElementById('displayCode').innerText = gameCode;
+    };
+
+    function listenToGame() {
+        onValue(ref(db, games/${gameCode}), (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return;
+
+            const list = document.getElementById('playersList');
+            list.innerHTML = "";
+            Object.keys(data.players || {}).forEach(p => {
+                list.innerHTML += <div class="player-item"><span>${p}</span> ${p === data.moderator ? '⭐' : ''}</div>;
+            });
+
+            if(myName === data.moderator) {
+                document.getElementById('modSettings').style.display = 'block';
+            } else {
+                document.getElementById('waitText').style.display = 'block';
+            }
+
+            if(data.status === 'playing') {
+                showScreen('gameScreen');
+                const header = document.getElementById('roleHeader');
+                const wordBox = document.getElementById('wordDisplay');
+
+                if(myName === data.impostor) {
+                    header.innerText = "🎭 SEN İMPOSTORSUN!";
+                    header.style.color = "#ff4757";
+                    wordBox.innerText = "İpucu: " + data.hint;
+                } else {
+                    header.innerText = "✅ SEN KÖYLÜSÜN";
+                    header.style.color = "#2ed573";
+                    wordBox.innerText = data.word;
+                }
+            }
+        });
+    }
+
+    document.getElementById('btnStart').onclick = async () => {
+        const cat = document.getElementById('catSelect').value;
+        const snap = await get(ref(db, games/${gameCode}/players));
+        const players = Object.keys(snap.val());
+        if(players.length < 2) return alert("En az 2 kişi lazım!");
+
+        const wordObj = categories[cat][Math.floor(Math.random() * categories[cat].length)];
+        const imp = players[Math.floor(Math.random() * players.length)];
+
+        await update(ref(db, games/${gameCode}), {
+            status: 'playing',
+            impostor: imp,
+            word: wordObj.w,
+            hint: wordObj.h
+        });
+    };
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+</script>
+
+</body>
+</html>
