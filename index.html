@@ -3,50 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Sesli Mesaj Sistemi</title>
+    <title>İmpostor Pro - HD Ses</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background: var(--card); border-radius: 24px; padding: 25px; width: 95%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; }
-        button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
         .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; display: inline-block; margin: 5px; }
-        .selected { border-color: white; transform: scale(1.1); }
-        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; }
-        #micBtn.recording { background: #ef4444; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);} 70% {box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);} 100% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);} }
-        .turn-area { padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 15px; }
+        .selected { border-color: white; transform: scale(1.1); box-shadow: 0 0 10px var(--accent); }
+        .player-tag { display: inline-block; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 14px; font-weight: bold; }
+        .turn-area { padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; transition: 0.5s; border: 2px solid rgba(255,255,255,0.1); }
+        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: pointer; transition: 0.2s; outline: none; }
+        #micBtn.recording { background: #ef4444; transform: scale(1.1); box-shadow: 0 0 30px #ef4444; }
+        .mod-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px dashed var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="homeScreen" class="screen active">
-        <h1 style="text-align:center">🎭 İmpostor</h1>
+        <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor HD</h1>
         <input type="text" id="nick" placeholder="Nickname">
-        <input type="text" id="room" placeholder="Oyun Kodu">
+        <input type="text" id="room" placeholder="Oyun Kodu (Katılmak için)">
         <div id="colorPicker" style="text-align:center">
             <div class="color-opt" style="background:#ef4444" data-c="#ef4444"></div>
             <div class="color-opt" style="background:#22c55e" data-c="#22c55e"></div>
             <div class="color-opt" style="background:#3b82f6" data-c="#3b82f6"></div>
             <div class="color-opt" style="background:#eab308" data-c="#eab308"></div>
+            <div class="color-opt" style="background:#a855f7" data-c="#a855f7"></div>
         </div>
-        <button id="btnJoin">OYUNA GİR</button>
+        <button id="btnJoin">BAĞLAN</button>
+    </div>
+
+    <div id="lobbyScreen" class="screen">
+        <h2 style="text-align:center">Oyun Kodu: <span id="roomDisplay" style="color:var(--accent)"></span></h2>
+        <div id="playerList" style="text-align:center; margin:20px 0;"></div>
+        
+        <div id="modPanel" style="display:none" class="mod-box">
+            <p style="margin:0; font-weight:bold; color:var(--accent)">🔧 Moderatör Ayarları</p>
+            <select id="category">
+                <option value="Hayvanlar">🐾 Hayvanlar</option>
+                <option value="Eşyalar">🏠 Eşyalar</option>
+                <option value="Yemekler">🍕 Yemekler</option>
+            </select>
+            <button id="btnStart" style="background:#22c55e">OYUNU BAŞLAT</button>
+        </div>
+        <p id="waitText" style="text-align:center; color:#94a3b8; display:none">Moderatör bekleniyor...</p>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div id="roomInfo" style="text-align:center; font-size:12px; opacity:0.6"></div>
         <div id="turnPanel" class="turn-area">
-            <h2 id="activeName">Bekleniyor...</h2>
+            <h2 id="activeName">Sıra Kimde?</h2>
         </div>
-        <div id="wordBox" style="text-align:center; padding:15px; background:rgba(0,0,0,0.2); border-radius:10px; margin:10px 0;"></div>
+        <div id="wordBox" style="text-align:center; padding:15px; background:rgba(0,0,0,0.2); border-radius:15px; font-weight:bold; font-size:20px;"></div>
         
         <button id="micBtn">🎙️</button>
         <p style="text-align:center; font-size:12px; color:#94a3b8">Basılı Tut - Konuş - Bırak</p>
         
-        <button id="btnNext" style="display:none; background:#f59e0b">SIRADAKİNE GEÇ ➔</button>
+        <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">Sıradaki Oyuncu ➔</button>
     </div>
 </div>
 
@@ -66,8 +83,13 @@
     const db = getDatabase(app);
 
     let myName, myColor = "#ef4444", gameCode, mediaRecorder, audioChunks = [];
+    const words = {
+        "Hayvanlar": ["Aslan", "Zürafa", "Penguen", "Fil", "Maymun", "Kaplumbağa"],
+        "Eşyalar": ["Buzdolabı", "Televizyon", "Ütü", "Lamba", "Tava", "Gözlük"],
+        "Yemekler": ["Lahmacun", "Hamburger", "Mantı", "Pizza", "Kebap", "Döner"]
+    };
 
-    // Renk Seçimi
+    // Renk Seçici
     document.querySelectorAll('.color-opt').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
@@ -76,66 +98,96 @@
         };
     });
 
-    // --- SES KAYIT SİSTEMİ ---
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                // Ses verisini Firebase'e gönder
-                update(ref(db, `games/${gameCode}/lastAudio`), {
-                    sender: myName,
-                    data: base64data,
-                    time: Date.now()
-                });
+    // --- HD SES SİSTEMİ ---
+    async function startRecording() {
+        if (!mediaRecorder) {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { 
+                    echoCancellation: true, 
+                    noiseSuppression: true, 
+                    autoGainControl: true 
+                } 
+            });
+            // Ses kalitesini artırmak için bitrate ayarı (webm/opus)
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    update(ref(db, `games/${gameCode}/lastAudio`), {
+                        sender: myName,
+                        data: reader.result,
+                        time: Date.now()
+                    });
+                };
+                audioChunks = [];
             };
-            audioChunks = [];
-        };
-    });
+        }
+        mediaRecorder.start();
+        document.getElementById('micBtn').classList.add('recording');
+    }
 
-    const micBtn = document.getElementById('micBtn');
-    micBtn.onmousedown = () => { if(mediaRecorder) { mediaRecorder.start(); micBtn.classList.add('recording'); }};
-    micBtn.onmouseup = () => { if(mediaRecorder) { mediaRecorder.stop(); micBtn.classList.remove('recording'); }};
-    micBtn.ontouchstart = (e) => { e.preventDefault(); if(mediaRecorder) { mediaRecorder.start(); micBtn.classList.add('recording'); }};
-    micBtn.ontouchend = () => { if(mediaRecorder) { mediaRecorder.stop(); micBtn.classList.remove('recording'); }};
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            document.getElementById('micBtn').classList.remove('recording');
+        }
+    }
 
-    // GİRİŞ
+    const mBtn = document.getElementById('micBtn');
+    mBtn.onmousedown = startRecording; mBtn.onmouseup = stopRecording;
+    mBtn.ontouchstart = (e) => { e.preventDefault(); startRecording(); };
+    mBtn.ontouchend = stopRecording;
+
+    // GİRİŞ & LOBİ SİSTEMİ
     document.getElementById('btnJoin').onclick = async () => {
         myName = document.getElementById('nick').value.trim();
         let c = document.getElementById('room').value.trim().toUpperCase();
-        if(!myName) return alert("İsim yaz!");
+        if(!myName) return alert("Nickname gerekli!");
 
         gameCode = c || Math.random().toString(36).substring(2,6).toUpperCase();
         if(!c) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
 
         await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
         document.getElementById('homeScreen').classList.remove('active');
-        document.getElementById('gameScreen').classList.add('active');
-        document.getElementById('roomInfo').innerText = "Kod: " + gameCode;
+        document.getElementById('lobbyScreen').classList.add('active');
+        document.getElementById('roomDisplay').innerText = gameCode;
 
-        listen();
+        listenGame();
     };
 
-    function listen() {
-        // Oyun verilerini dinle
+    function listenGame() {
         onValue(ref(db, `games/${gameCode}`), (s) => {
             const d = s.val(); if(!d) return;
 
+            // Lobi Listesi
+            const list = document.getElementById('playerList');
+            list.innerHTML = "";
+            Object.values(d.players || {}).forEach(p => {
+                list.innerHTML += `<span class="player-tag" style="background:${p.color}">${p.name}</span>`;
+            });
+
+            const isMod = myName === d.moderator;
+            document.getElementById('modPanel').style.display = (isMod && d.status === 'waiting') ? 'block' : 'none';
+            document.getElementById('waitText').style.display = (!isMod && d.status === 'waiting') ? 'block' : 'none';
+
             if(d.status === 'playing') {
+                document.getElementById('lobbyScreen').classList.remove('active');
+                document.getElementById('gameScreen').classList.add('active');
+                
                 const active = d.playerOrder[d.turn];
                 const activeP = Object.values(d.players).find(p => p.name === active);
                 document.getElementById('activeName').innerText = active;
-                document.getElementById('turnPanel').style.background = activeP ? activeP.color : "#444";
+                if(activeP) document.getElementById('turnPanel').style.background = activeP.color;
+                
                 document.getElementById('wordBox').innerText = (d.impostor === myName) ? "🎭 İMPOSTORSUN" : "Kelime: " + d.word;
+                document.getElementById('btnNext').style.display = isMod ? 'block' : 'none';
             }
-            document.getElementById('btnNext').style.display = (myName === d.moderator) ? 'block' : 'none';
         });
 
-        // SESLERİ DİNLE VE OYNAT
+        // Ses Dinleyici
         onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
             const audio = s.val();
             if(audio && audio.sender !== myName) {
@@ -145,18 +197,23 @@
         });
     }
 
+    document.getElementById('btnStart').onclick = async () => {
+        const s = await get(ref(db, `games/${gameCode}`));
+        const d = s.val();
+        const players = Object.keys(d.players);
+        const cat = document.getElementById('category').value;
+        const randomWord = words[cat][Math.floor(Math.random() * words[cat].length)];
+        
+        await update(ref(db, `games/${gameCode}`), {
+            status: 'playing', word: randomWord, turn: 0, playerOrder: players,
+            impostor: players[Math.floor(Math.random() * players.length)]
+        });
+    };
+
     document.getElementById('btnNext').onclick = async () => {
         const s = await get(ref(db, `games/${gameCode}`));
         const d = s.val();
-        if(d.status === 'waiting') {
-            const players = Object.keys(d.players);
-            await update(ref(db, `games/${gameCode}`), {
-                status: 'playing', word: "ASLAN", turn: 0, playerOrder: players,
-                impostor: players[Math.floor(Math.random() * players.length)]
-            });
-        } else {
-            await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
-        }
+        await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
     };
 </script>
 </body>
