@@ -3,65 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelime İmpostor - Canlı Ses & Pro Panel</title>
+    <title>İmpostor Renkler & Canlı Ses</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <style>
-        :root { --p-color: #bb86fc; --bg-color: #121212; --card-bg: #1e1e1e; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background: var(--card-bg); border-radius: 20px; padding: 30px; width: 100%; max-width: 550px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid #333; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: var(--card); border-radius: 24px; padding: 32px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .screen { display: none; }
         .active { display: block; }
-        h1, h2 { color: var(--p-color); text-align: center; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #2c2c2c; border: 1px solid #444; color: white; border-radius: 8px; }
-        button { width: 100%; padding: 15px; background: var(--p-color); color: #121212; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
-        button:hover { opacity: 0.8; transform: scale(1.01); }
-        .mod-panel { background: #252525; padding: 20px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--p-color); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .status-bar { background: #03dac6; color: #121212; padding: 8px; border-radius: 20px; font-size: 12px; text-align: center; margin-bottom: 20px; font-weight: bold; }
-        .turn-box { background: #3700b3; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid var(--p-color); margin: 20px 0; }
-        .player-chip { background: #333; padding: 8px 15px; border-radius: 20px; display: inline-block; margin: 5px; font-size: 14px; border: 1px solid #444; }
+        h1 { text-align: center; color: var(--accent); margin-bottom: 24px; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; font-size: 16px; }
+        button { width: 100%; padding: 16px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 12px; transition: 0.2s; }
+        .color-picker { display: flex; justify-content: space-around; margin: 15px 0; }
+        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+        .color-opt.selected { border-color: white; transform: scale(1.2); }
+        .player-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; justify-content: center; }
+        .player-tag { padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 2px solid transparent; }
+        .active-turn { animation: glow 1.5s infinite alternate; transform: scale(1.1); }
+        @keyframes glow { from { box-shadow: 0 0 5px white; } to { box-shadow: 0 0 20px white; } }
+        .status { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="voiceIndicator" class="status-bar" style="display:none">🎙️ CANLI SES BAĞLANTISI AKTİF</div>
-
     <div id="homeScreen" class="screen active">
-        <h1>🎭 Kelime İmpostor</h1>
-        <input type="text" id="nickInput" placeholder="Nickname Yazın">
-        <input type="text" id="codeInput" placeholder="Oyun Kodu (Varsa)">
+        <h1>🎭 İmpostor Voice</h1>
+        <input type="text" id="nickInput" placeholder="Nickname">
+        <input type="text" id="codeInput" placeholder="Oyun Kodu">
+        <p style="text-align:center; margin-top:10px;">Rengini Seç:</p>
+        <div class="color-picker" id="colorPicker">
+            <div class="color-opt" style="background:#ef4444" data-color="#ef4444"></div>
+            <div class="color-opt" style="background:#22c55e" data-color="#22c55e"></div>
+            <div class="color-opt" style="background:#3b82f6" data-color="#3b82f6"></div>
+            <div class="color-opt" style="background:#eab308" data-color="#eab308"></div>
+            <div class="color-opt" style="background:#a855f7" data-color="#a855f7"></div>
+        </div>
         <button id="btnJoin">Odaya Gir ve Sesi Aç</button>
+        <div class="status">Not: Mikrofon izni vermeyi unutmayın.</div>
     </div>
 
     <div id="lobbyScreen" class="screen">
-        <h2>Lobi: <span id="displayCode" style="color:#03dac6"></span></h2>
-        <div id="playersList" style="margin:20px 0; text-align:center"></div>
-        
-        <div id="modSettings" style="display:none" class="mod-panel">
-            <h3>⚙️ Moderatör Ayarları</h3>
-            <div class="grid">
-                <div><label>Kategori</label>
-                    <select id="catSelect">
-                        <option value="hayvanlar">🐾 Hayvanlar</option>
-                        <option value="meslekler">👔 Meslekler</option>
-                        <option value="yemekler">🍕 Yemekler</option>
-                    </select>
-                </div>
-                <div><label>Tur Sayısı</label><input type="number" id="roundCnt" value="3"></div>
-                <div><label>İmpostor Sayısı</label><input type="number" id="impCnt" value="1"></div>
-                <div style="display:flex; align-items:center; gap:5px"><input type="checkbox" id="giveHint" checked> <label>İpucu Ver</label></div>
-            </div>
+        <h2>Lobi: <span id="displayCode" style="color:var(--accent)"></span></h2>
+        <div id="playersList" class="player-list"></div>
+        <div id="modControls" style="display:none">
             <button id="btnStart">OYUNU BAŞLAT</button>
         </div>
-        <p id="waitMsg" style="text-align:center; color:#888; display:none">Moderatör oyunu kuruyor...</p>
+        <p id="waitMsg" style="text-align:center; color:#64748b">Moderatör bekleniyor...</p>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div id="turnInfo" class="turn-box">Hazırlanın...</div>
-        <div id="wordDisplay" style="text-align:center; font-size:28px; color:#03dac6; margin:20px 0; font-weight:bold"></div>
-        <button id="btnNext" style="background:#03dac6; display:none">Sıradakine Geç ➔</button>
+        <div id="turnDisplay" style="text-align:center; padding:20px; border-radius:15px; margin-bottom:20px; transition:0.5s">
+            <h2 id="activePlayerName">Sıra Bekleniyor</h2>
+            <p>Konuşma Sırası Onda!</p>
+        </div>
+        <div id="wordBox" style="background:#334155; padding:25px; border-radius:15px; text-align:center; font-size:24px; font-weight:bold; border: 2px solid var(--accent)"></div>
+        <button id="btnNext" style="display:none; background:#f59e0b">Sıradakine Geç ➔</button>
     </div>
 </div>
 
@@ -69,8 +66,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // --- AYARLAR ---
-    const AGORA_APP_ID = "0305c3f1fade43beaec2e13a29e19467"; 
+    const AGORA_APP_ID = "0305c3f1fade43beaec2e13a29e19467";
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
@@ -81,92 +77,90 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    let myName = "", gameCode = "", localTrack;
-    const categories = {
-        hayvanlar: [{w:"Zürafa", h:"Boynu uzun"}, {w:"Fil", h:"Hortumlu"}, {w:"Aslan", h:"Orman kralı"}],
-        meslekler: [{w:"Pilot", h:"Uçak uçar"}, {w:"Aşçı", h:"Yemek yapar"}],
-        yemekler: [{w:"Pizza", h:"İtalyan hamur işi"}, {w:"Kebap", h:"Et yemeği"}]
-    };
+    let myName = "", myColor = "#ef4444", gameCode = "", localAudio;
 
-    function announce(text) {
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'tr-TR';
-        window.speechSynthesis.speak(msg);
-    }
+    // Renk Seçimi
+    document.querySelectorAll('.color-opt').forEach(opt => {
+        opt.onclick = () => {
+            document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('selected'));
+            opt.classList.add('selected');
+            myColor = opt.dataset.color;
+        };
+    });
 
-    async function connectVoice(channel) {
+    async function startVoice(channel) {
         try {
-            await agoraClient.join(AGORA_APP_ID, channel, null, null);
-            localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-            await agoraClient.publish([localTrack]);
-            document.getElementById('voiceIndicator').style.display = 'block';
-            agoraClient.on("user-published", async (user, type) => {
-                await agoraClient.subscribe(user, type);
-                if (type === "audio") user.audioTrack.play();
+            await client.join(AGORA_APP_ID, channel, null, null);
+            localAudio = await AgoraRTC.createMicrophoneAudioTrack();
+            await client.publish([localAudio]);
+            client.on("user-published", async (user, type) => {
+                await client.subscribe(user, type);
+                if(type === "audio") user.audioTrack.play();
             });
-        } catch (e) { console.error("Ses hatası:", e); }
+        } catch(e) { console.error("Ses Hatası:", e); }
     }
 
     document.getElementById('btnJoin').onclick = async () => {
         myName = document.getElementById('nickInput').value.trim();
         let code = document.getElementById('codeInput').value.trim().toUpperCase();
-        if(!myName) return alert("İsim gerekli!");
+        if(!myName) return alert("İsim yazın!");
 
         if(code) {
-            const s = await get(ref(db, `games/${code}`));
-            if(!s.exists()) return alert("Oda bulunamadı!");
             gameCode = code;
         } else {
             gameCode = Math.random().toString(36).substring(2,6).toUpperCase();
             await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
         }
 
-        await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, order: Math.random() });
-        await connectVoice(gameCode);
+        await update(ref(db, `games/${gameCode}/players/${myName}`), { name: myName, color: myColor });
+        await startVoice(gameCode);
         
-        showScreen('lobbyScreen');
+        document.getElementById('homeScreen').classList.remove('active');
+        document.getElementById('lobbyScreen').classList.add('active');
         document.getElementById('displayCode').innerText = gameCode;
-        listenGame();
+        listen();
     };
 
-    function listenGame() {
+    function listen() {
         onValue(ref(db, `games/${gameCode}`), (snap) => {
             const data = snap.val();
             if(!data) return;
 
+            // Oyuncu Listesi
             const list = document.getElementById('playersList');
             list.innerHTML = "";
-            Object.keys(data.players || {}).forEach(n => {
-                list.innerHTML += `<span class="player-chip">${n} ${n === data.moderator ? '👑' : ''}</span>`;
+            const players = data.players || {};
+            Object.values(players).forEach(p => {
+                list.innerHTML += `<div class="player-tag" style="background:${p.color}; color:white">${p.name}</div>`;
             });
 
-            if(myName === data.moderator) document.getElementById('modSettings').style.display = 'block';
-            else document.getElementById('waitMsg').style.display = 'block';
+            if(myName === data.moderator) document.getElementById('modControls').style.display = 'block';
 
+            // Oyun Başladıysa
             if(data.status === 'playing') {
-                showScreen('gameScreen');
-                const order = data.playerOrder;
-                const active = order[data.turn];
+                document.getElementById('lobbyScreen').classList.remove('active');
+                document.getElementById('gameScreen').classList.add('active');
                 
-                // Kelime Gösterimi
-                const wordBox = document.getElementById('wordDisplay');
-                if(data.impostors.includes(myName)) {
-                    wordBox.innerText = data.giveHint ? "İpucu: " + data.hint : "İMPOSTORSUN!";
-                    wordBox.style.color = "#ff4757";
+                const activePlayerName = data.playerOrder[data.turn];
+                const activePlayerData = Object.values(players).find(p => p.name === activePlayerName);
+                
+                // Renk ve Sıra Güncelleme
+                const turnBox = document.getElementById('turnDisplay');
+                document.getElementById('activePlayerName').innerText = activePlayerName;
+                turnBox.style.background = activePlayerData ? activePlayerData.color : "#334155";
+                
+                // Kelime
+                const wordBox = document.getElementById('wordBox');
+                if(data.impostor === myName) {
+                    wordBox.innerText = "🎭 İMPOSTORSUN!";
+                    wordBox.style.color = "#f87171";
                 } else {
                     wordBox.innerText = "Kelime: " + data.word;
-                    wordBox.style.color = "#03dac6";
+                    wordBox.style.color = "#4ade80";
                 }
 
-                // Sıra Anonsu
-                if(window.lastTurn !== data.turn) {
-                    const txt = (active === myName) ? "Sıra sende, konuş." : `Sıra ${active} kullanıcısında.`;
-                    announce(txt);
-                    window.lastTurn = data.turn;
-                }
-                document.getElementById('turnInfo').innerHTML = `<h2>Sıra: ${active}</h2><p>Herkes seni duyuyor!</p>`;
                 document.getElementById('btnNext').style.display = (myName === data.moderator) ? 'block' : 'none';
             }
         });
@@ -174,35 +168,22 @@
 
     document.getElementById('btnStart').onclick = async () => {
         const pSnap = await get(ref(db, `games/${gameCode}/players`));
-        const players = Object.values(pSnap.val()).sort((a,b) => a.order - b.order).map(p => p.name);
-        
-        const cat = document.getElementById('catSelect').value;
-        const word = categories[cat][Math.floor(Math.random() * categories[cat].length)];
-        const impCount = parseInt(document.getElementById('impCnt').value);
-        const imps = [...players].sort(() => 0.5 - Math.random()).slice(0, impCount);
-
+        const players = Object.keys(pSnap.val());
+        const imp = players[Math.floor(Math.random() * players.length)];
         await update(ref(db, `games/${gameCode}`), {
             status: 'playing',
-            word: word.w,
-            hint: word.h,
-            impostors: imps,
+            word: "PİZA",
+            impostor: imp,
             playerOrder: players,
-            turn: 0,
-            giveHint: document.getElementById('giveHint').checked
+            turn: 0
         });
     };
 
     document.getElementById('btnNext').onclick = async () => {
-        const snap = await get(ref(db, `games/${gameCode}`));
-        const data = snap.val();
-        let next = (data.turn + 1) % data.playerOrder.length;
-        await update(ref(db, `games/${gameCode}`), { turn: next });
+        const s = await get(ref(db, `games/${gameCode}`));
+        const d = s.val();
+        await update(ref(db, `games/${gameCode}`), { turn: (d.turn + 1) % d.playerOrder.length });
     };
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
 </script>
 </body>
 </html>
