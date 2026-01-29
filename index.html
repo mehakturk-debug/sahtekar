@@ -3,83 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adam Asmaca - Pro Rekabet</title>
+    <title>Adam Asmaca - AI Sunucu Modu</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; --orange: #f59e0b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; }
         .screen { display: none; text-align: center; }
         .active { display: block; }
         
-        .player-list { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin: 15px 0; text-align: left; border: 1px solid #334155; }
-        .player-tag { display: inline-block; background: var(--accent); color: #0f172a; padding: 5px 12px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 13px; }
+        /* Lobi */
+        .player-list { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin: 15px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+        .player-tag { background: var(--accent); color: #0f172a; padding: 6px 15px; border-radius: 20px; font-weight: bold; }
         
-        .char-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .char-btn { background: #334155; padding: 10px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .char-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .char-btn { background: #334155; padding: 12px; border-radius: 12px; cursor: pointer; border: 2px solid transparent; }
         .char-btn.selected { border-color: var(--accent); background: #1e293b; transform: scale(1.05); }
         
-        input { width: 100%; padding: 12px; box-sizing: border-box; background: #334155; border: 1px solid #475569; color: white; border-radius: 12px; margin-bottom: 10px; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        .btn-stop { background: var(--red); color: white; margin-top: 10px; }
+        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         .btn-start { background: var(--green); margin-top: 10px; }
 
-        .word-box { font-size: 32px; letter-spacing: 6px; margin: 20px 0; color: var(--accent); font-family: 'Courier New', monospace; font-weight: bold; }
-        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(35px, 1fr)); gap: 5px; margin-top: 15px; }
-        .key { background: #475569; padding: 10px 2px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.1s; border-bottom: 3px solid #1e293b; }
+        /* Oyun Alanı */
+        .header { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; opacity: 0.8; }
+        .cat-box { color: var(--orange); font-weight: bold; font-size: 18px; margin-bottom: 5px; }
+        .word-display { font-size: 36px; letter-spacing: 8px; margin: 25px 0; color: var(--accent); font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        
+        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(35px, 1fr)); gap: 6px; }
+        .key { background: #475569; padding: 12px 2px; border-radius: 8px; cursor: pointer; border-bottom: 3px solid #1e293b; font-weight: bold; }
         .key.used { opacity: 0.2; pointer-events: none; }
         
-        #gameScores { margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; text-align: left; }
-        .score-line { display: flex; justify-content: space-between; border-bottom: 1px solid #334155; padding: 5px 0; }
+        .scoreboard { margin-top: 25px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; text-align: left; }
+        .score-line { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
+        .winner-flash { color: var(--green); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="loginScreen" class="screen active">
-        <h2 style="color:var(--accent)">🎭 Kimsin?</h2>
-        <div class="char-select">
-            <div class="char-btn" onclick="setPlayer('Mehmet')">Mehmet</div>
-            <div class="char-btn" onclick="setPlayer('Emre')">Emre</div>
-            <div class="char-btn" onclick="setPlayer('Recep')">Recep</div>
-            <div class="char-btn" onclick="setPlayer('Furkan')">Furkan</div>
-            <div class="char-btn" onclick="setPlayer('Ali')">Ali</div>
+        <h2 style="color:var(--accent)">🎭 Adam Asmaca Pro</h2>
+        <p>Karakterini seç ve lobiye katıl</p>
+        <div class="char-grid">
+            <div class="char-btn" onclick="selectMe('Mehmet')">Mehmet</div>
+            <div class="char-btn" onclick="selectMe('Emre')">Emre</div>
+            <div class="char-btn" onclick="selectMe('Recep')">Recep</div>
+            <div class="char-btn" onclick="selectMe('Furkan')">Furkan</div>
+            <div class="char-btn" onclick="selectMe('Ali')">Ali</div>
         </div>
-        <button id="joinBtn">LOBİYE KATIL</button>
+        <button id="joinBtn">LOBİYE GİR</button>
     </div>
 
     <div id="lobbyScreen" class="screen">
         <h3>Lobi</h3>
-        <div class="player-list" id="lobbyPlayerList"></div>
+        <div class="player-list" id="lobbyList"></div>
         <div id="adminPanel" style="display:none">
-            <button class="btn-start" onclick="startGame()">OYUNU BAŞLAT</button>
+            <button class="btn-start" onclick="nextQuestion()">OYUNU / SIRADAKİ SORUYU BAŞLAT</button>
         </div>
-        <p id="waitMsg" style="font-size:12px; opacity:0.6">Moderatör oyunu başlatınca kimse giremez.</p>
+        <p style="font-size:12px; opacity:0.6">Soruları sistem otomatik sorar.</p>
     </div>
 
     <div id="gameScreen" class="screen">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <b id="pName" style="color:var(--accent)"></b>
-            <span id="gameClock" style="color:var(--orange)">⏱ 00s</span>
+        <div class="header">
+            <span id="pDisplay"></span>
+            <span id="timerDisplay">⏱ 00s</span>
         </div>
-        <div id="turnInfo" style="background:rgba(245, 158, 11, 0.1); padding:5px; border-radius:8px; margin-bottom:10px;"></div>
-        
-        <div class="word-box" id="wordDisplay"></div>
+        <div class="cat-box" id="categoryDisplay">Kategori: ...</div>
+        <div class="word-display" id="wordDisplay">_ _ _ _</div>
 
-        <div id="creatorArea" style="display:none">
-            <input type="text" id="targetWord" placeholder="Sorulacak kelimeyi yaz..." maxlength="15">
-            <button onclick="publishWord()">KELİMEYİ GÖNDER</button>
-        </div>
-
-        <div id="guesserArea" style="display:none">
-            <div id="mistakeDisplay" style="color:var(--red); font-weight:bold; margin-bottom:5px;">Hata: 0/6</div>
+        <div id="playArea">
+            <div id="mistakeDisplay" style="color:var(--red); font-weight:bold; margin-bottom:10px;">Hata: 0/6</div>
             <div class="keyboard" id="keyboard"></div>
         </div>
 
-        <div id="adminControls" style="display:none; margin-top:15px;">
-            <button class="btn-stop" onclick="finishGame()">OYUNU BİTİR (FİNAL)</button>
-        </div>
-
-        <div id="gameScores"></div>
+        <div class="scoreboard" id="scoreBoard"></div>
     </div>
 </div>
 
@@ -97,23 +93,30 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myName = "", roomID = "REKABET_ODASI", localGuesses = [], localMistakes = 0, isFinished = false, roundStartTime = 0;
+    let myName = "", roomID = "SERVER_GAME_01", localGuesses = [], localMistakes = 0, isFinished = false;
 
-    window.setPlayer = (n) => {
+    // 1000 KELİMELİK HAVUZ (Örnek Gruplar)
+    const wordPool = {
+        "Teknoloji": ["YAZILIM", "ALGORİTMA", "VERİTABANI", "BİLGİSAYAR", "İNTERNET", "YAPAYZEKA", "BLOCKCHAIN", "TELEFON", "DONANIM", "KODLAMA"],
+        "Hayvanlar": ["ASLAN", "FİL", "ZÜRAFA", "PENGUEN", "KAPLAN", "KARTAL", "BALİNA", "TİMSAH", "KANGURU", "KAPLUMBAĞA"],
+        "Şehirler": ["İSTANBUL", "ANKARA", "İZMİR", "LONDRA", "PARİS", "TOKYO", "BERLİN", "AMSTERDAM", "MOSKOVA", "BARSELONA"],
+        "Yiyecekler": ["BAKLAVA", "LAHMACUN", "İSKENDER", "HAMBURGER", "MAKARNA", "MENEMEN", "PİZZA", "MANTI", "KEBAP", "SÜTLAÇ"]
+        // Not: 1000 kelimeye tamamlamak için bu listeler genişletilebilir.
+    };
+
+    window.selectMe = (n) => {
         myName = n;
         document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
         event.target.classList.add('selected');
     };
 
     document.getElementById('joinBtn').onclick = async () => {
-        if(!myName) return alert("İsim seçin!");
+        if(!myName) return alert("İsim seç!");
         const rRef = ref(db, `games/${roomID}`);
         const snap = await get(rRef);
         
-        if(snap.exists() && snap.val().status !== 'LOBBY') return alert("Oyun başladı, şu an giremezsin!");
-
         if(!snap.exists()) {
-            await set(rRef, { status: 'LOBBY', moderator: myName, players: {}, activeOrder: [], turnIdx: 0, currentWord: "", winners: [], startTime: 0 });
+            await set(rRef, { status: 'LOBBY', moderator: myName, players: {}, currentWord: "", category: "", winners: [], startTime: 0 });
         }
         
         await update(ref(db, `games/${roomID}/players/${myName}`), { name: myName, score: 0 });
@@ -127,75 +130,42 @@
             const d = s.val(); if(!d) return;
 
             if(d.status === 'LOBBY') {
-                const pList = d.players ? Object.keys(d.players) : [];
-                document.getElementById('lobbyPlayerList').innerHTML = pList.map(p => `<span class="player-tag">${p}</span>`).join('');
+                document.getElementById('lobbyList').innerHTML = Object.keys(d.players).map(p => `<span class="player-tag">${p}</span>`).join('');
                 if(myName === d.moderator) document.getElementById('adminPanel').style.display = 'block';
-            } else if(d.status === 'FINISHED') {
-                showFinalScores(d);
             } else {
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
-                handleGameFlow(d);
+                handleGame(d);
             }
         });
     }
 
-    function handleGameFlow(d) {
-        const turnOwner = d.activeOrder[d.turnIdx];
-        document.getElementById('turnInfo').innerText = `Kelime Yazan: ${turnOwner}`;
-        document.getElementById('pName').innerText = myName;
-        if(myName === d.moderator) document.getElementById('adminControls').style.display = 'block';
-
-        if(d.status === 'WAITING_WORD') {
-            resetLocal();
-            document.getElementById('wordDisplay').innerText = "KELİME YAZILIYOR...";
-            if(myName === turnOwner) {
-                document.getElementById('creatorArea').style.display = 'block';
-                document.getElementById('guesserArea').style.display = 'none';
-            } else {
-                document.getElementById('creatorArea').style.display = 'none';
-                document.getElementById('guesserArea').style.display = 'none';
-            }
-        } else if(d.status === 'PLAYING') {
-            document.getElementById('creatorArea').style.display = 'none';
-            if(myName === turnOwner) {
-                document.getElementById('wordDisplay').innerText = d.currentWord;
-                document.getElementById('guesserArea').style.display = 'none';
-            } else {
-                document.getElementById('guesserArea').style.display = 'block';
-                renderGame(d.currentWord, d);
-            }
-        }
+    function handleGame(d) {
+        document.getElementById('pDisplay').innerText = "👤 " + myName;
+        document.getElementById('categoryDisplay').innerText = "Kategori: " + d.category;
         
-        const scoresHtml = Object.values(d.players).sort((a,b)=>b.score - a.score).map(p => `
-            <div class="score-line"><span>${p.name} ${d.winners?.includes(p.name) ? '✅' : ''}</span><b>${p.score}</b></div>
-        `).join('');
-        document.getElementById('gameScores').innerHTML = "<b>Anlık Skorlar:</b>" + scoresHtml;
-    }
-
-    window.startGame = async () => {
-        const snap = await get(ref(db, `games/${roomID}`));
-        const pList = Object.keys(snap.val().players);
-        update(ref(db, `games/${roomID}`), { status: 'WAITING_WORD', activeOrder: pList, turnIdx: 0 });
-    };
-
-    window.publishWord = () => {
-        const w = document.getElementById('targetWord').value.toUpperCase().trim();
-        if(w.length < 2) return;
-        update(ref(db, `games/${roomID}`), { currentWord: w, status: 'PLAYING', winners: [], startTime: Date.now() });
-    };
-
-    function renderGame(word, d) {
+        // Kelime Maskeleme
         let display = "";
-        word.split('').forEach(l => display += localGuesses.includes(l) ? l + " " : "_ ");
+        d.currentWord.split('').forEach(l => display += localGuesses.includes(l) ? l + " " : "_ ");
         document.getElementById('wordDisplay').innerText = display;
 
+        // Klavye Oluşturma
         const alf = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split('');
         document.getElementById('keyboard').innerHTML = alf.map(l => `
-            <div class="key ${localGuesses.includes(l) ? 'used' : ''}" onclick="makeGuess('${l}', '${word}')">${l}</div>
+            <div class="key ${localGuesses.includes(l) ? 'used' : ''}" onclick="makeGuess('${l}', '${d.currentWord}')">${l}</div>
         `).join('');
 
-        if(!isFinished && word.split('').every(l => localGuesses.includes(l))) {
+        // Skor Tablosu
+        const scoresHtml = Object.values(d.players).sort((a,b)=>b.score - a.score).map(p => `
+            <div class="score-line">
+                <span>${p.name} ${d.winners?.includes(p.name) ? '✅' : ''}</span>
+                <b>${p.score}</b>
+            </div>
+        `).join('');
+        document.getElementById('scoreBoard').innerHTML = "<b>Sıralama:</b>" + scoresHtml;
+
+        // Bireysel Kazanma Kontrolü
+        if(!isFinished && d.currentWord.split('').every(l => localGuesses.includes(l))) {
             isFinished = true;
             submitWin(d);
         }
@@ -208,51 +178,46 @@
             localMistakes++;
             document.getElementById('mistakeDisplay').innerText = `Hata: ${localMistakes}/6`;
         }
-    }
+    };
 
     async function submitWin(d) {
-        const solveTime = (Date.now() - d.startTime) / 1000;
         let winners = d.winners || [];
         if(!winners.includes(myName)) {
             winners.push(myName);
+            const solveTime = (Date.now() - d.startTime) / 1000;
             
-            // GELİŞMİŞ PUANLAMA: (Hız Bonusu + Hatasızlık Bonusu)
-            // Temel 20 puan + (60 - saniye) + (Hata yapmadıysa 20 puan)
-            let speedBonus = Math.max(0, Math.floor(60 - solveTime));
-            let mistakeBonus = (localMistakes === 0) ? 20 : 0;
-            let totalEarned = 20 + speedBonus + mistakeBonus;
-
-            const newScore = (d.players[myName].score || 0) + totalEarned;
+            // PUANLAMA: (Hız + Hatasızlık)
+            let points = 20 + Math.max(0, Math.floor(60 - solveTime)) + (localMistakes === 0 ? 20 : 0);
+            
+            const newScore = (d.players[myName].score || 0) + points;
             await update(ref(db, `games/${roomID}/players/${myName}`), { score: newScore });
             await update(ref(db, `games/${roomID}`), { winners: winners });
-
-            if(winners.length >= (d.activeOrder.length - 1)) {
-                setTimeout(()=> {
-                    update(ref(db, `games/${roomID}`), { 
-                        status: 'WAITING_WORD', 
-                        turnIdx: (d.turnIdx + 1) % d.activeOrder.length,
-                        currentWord: "", winners: [] 
-                    });
-                }, 3000);
-            }
         }
     }
 
-    window.finishGame = () => {
-        if(confirm("Oyunu tamamen bitirmek istediğine emin misin?")) {
-            update(ref(db, `games/${roomID}`), { status: 'FINISHED' });
-        }
+    // YENİ SORU (Sadece Moderatör tetikleyebilir)
+    window.nextQuestion = async () => {
+        const cats = Object.keys(wordPool);
+        const randomCat = cats[Math.floor(Math.random() * cats.length)];
+        const words = wordPool[randomCat];
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+
+        resetLocalState();
+        await update(ref(db, `games/${roomID}`), {
+            status: 'PLAYING',
+            currentWord: randomWord,
+            category: randomCat,
+            winners: [],
+            startTime: Date.now()
+        });
     };
 
-    function showFinalScores(d) {
-        document.getElementById('gameScreen').innerHTML = `
-            <h2 style="color:var(--green)">Oyun Bitti!</h2>
-            <div id="gameScores">${document.getElementById('gameScores').innerHTML}</div>
-            <button onclick="location.reload()">YENİ OYUN</button>
-        `;
+    function resetLocalState() {
+        localGuesses = [];
+        localMistakes = 0;
+        isFinished = false;
+        if(document.getElementById('mistakeDisplay')) document.getElementById('mistakeDisplay').innerText = "Hata: 0/6";
     }
-
-    function resetLocal() { localGuesses = []; localMistakes = 0; isFinished = false; document.getElementById('mistakeDisplay').innerText = "Hata: 0/6"; }
 </script>
 </body>
 </html>
