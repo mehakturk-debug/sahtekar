@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İmpostor Pro - Firebase Audio Fix</title>
+    <title>İmpostor Pro - Ses Fix</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --red: #ef4444; --green: #22c55e; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         .container { background: var(--card); border-radius: 24px; padding: 20px; width: 95%; max-width: 950px; height: 90vh; display: flex; gap: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .main-game { flex: 2; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; }
+        .main-game { flex: 2; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; position: relative; }
         .side-panel { flex: 0.8; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border-left: 1px solid #334155; }
         .screen { display: none; width: 100%; }
         .active { display: block; }
@@ -21,7 +21,7 @@
         .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 15px; font-size: 14px; }
         .turn-box { padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
         .word-display { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; font-size: 24px; text-align: center; font-weight: bold; margin: 10px 0; border-bottom: 4px solid var(--accent); }
-        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: not-allowed; opacity: 0.3; transition: 0.3s; }
+        #micBtn { width: 100px; height: 100px; border-radius: 50%; background: #475569; border: none; color: white; font-size: 40px; margin: 20px auto; display: block; cursor: not-allowed; opacity: 0.3; transition: 0.3s; outline: none; }
         #micBtn.my-turn { cursor: pointer; opacity: 1; background: var(--accent); }
         #micBtn.recording { background: var(--red); box-shadow: 0 0 30px var(--red); transform: scale(1.1); }
         .side-player { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 8px; background: #334155; }
@@ -35,7 +35,7 @@
 <div class="container">
     <div class="main-game">
         <div id="homeScreen" class="screen active">
-            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Master</h1>
+            <h1 style="text-align:center; color:var(--accent)">🎭 İmpostor Pro</h1>
             <div class="player-grid">
                 <div class="player-opt" data-name="Mehmet"><img src="" class="avatar-pre" id="pre-Mehmet"><span>Mehmet</span></div>
                 <div class="player-opt" data-name="Emre"><img src="" class="avatar-pre" id="pre-Emre"><span>Emre</span></div>
@@ -46,7 +46,7 @@
             <button onclick="document.getElementById('photoIn').click()">📷 FOTOĞRAF YÜKLE</button>
             <input type="file" id="photoIn" accept="image/*" style="display:none">
             <input type="text" id="roomCode" placeholder="Oyun Kodu">
-            <button id="btnEnter">SİSTEME BAĞLAN</button>
+            <button id="btnEnter">BAĞLAN</button>
         </div>
 
         <div id="lobbyScreen" class="screen">
@@ -66,7 +66,7 @@
             </div>
             <div id="wordBox" class="word-display"></div>
             <button id="micBtn">🎙️</button>
-            <button id="btnNext" style="display:none; background:#f59e0b">SIRADAKİ OYUNCU ➔</button>
+            <button id="btnNext" style="display:none; background:#f59e0b; margin-top:20px;">SIRADAKİ OYUNCU ➔</button>
         </div>
 
         <div id="dmBox" class="dm-window">
@@ -135,29 +135,32 @@
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // --- FIREBASE AUDIO ENGINE (KESİN ÇÖZÜM) ---
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        mediaRec = new MediaRecorder(stream);
-        mediaRec.ondataavailable = e => audioChunks.push(e.data);
-        mediaRec.onstop = () => {
-            const r = new FileReader();
-            r.readAsDataURL(new Blob(audioChunks));
-            r.onloadend = () => {
-                update(ref(db, `games/${gameCode}/lastAudio`), { sender: myName, data: r.result, t: Date.now() });
+    // --- SES MOTORU (FIREBASE ÜZERİNDEN KAYIT/GÖNDER) ---
+    async function initAudio() {
+        if (!mediaRec) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRec = new MediaRecorder(stream);
+            mediaRec.ondataavailable = e => audioChunks.push(e.data);
+            mediaRec.onstop = () => {
+                const r = new FileReader();
+                r.readAsDataURL(new Blob(audioChunks));
+                r.onloadend = () => {
+                    update(ref(db, `games/${gameCode}/lastAudio`), { sender: myName, data: r.result, t: Date.now() });
+                };
+                audioChunks = [];
             };
-            audioChunks = [];
-        };
-    });
+        }
+    }
 
     const mBtn = document.getElementById('micBtn');
-    const startMic = () => { if(mBtn.classList.contains('my-turn') && mediaRec) { mediaRec.start(); mBtn.classList.add('recording'); } };
+    const startMic = async () => { if(mBtn.classList.contains('my-turn')) { await initAudio(); mediaRec.start(); mBtn.classList.add('recording'); } };
     const stopMic = () => { if(mediaRec && mediaRec.state !== "inactive") { mediaRec.stop(); mBtn.classList.remove('recording'); } };
     mBtn.onmousedown = startMic; mBtn.onmouseup = stopMic;
     mBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); }; mBtn.ontouchend = stopMic;
 
-    // --- GAME ENGINE ---
+    // --- OYUN MANTIĞI ---
     document.getElementById('btnEnter').onclick = async () => {
-        if(!myName) return alert("Kimsin?");
+        if(!myName) return alert("Kim olduğunu seç!");
         gameCode = document.getElementById('roomCode').value.trim().toUpperCase() || Math.random().toString(36).substring(2,6).toUpperCase();
         const snap = await get(ref(db, `games/${gameCode}`));
         if(!snap.exists()) await set(ref(db, `games/${gameCode}`), { status: 'waiting', moderator: myName });
@@ -200,16 +203,14 @@
             }
         });
 
-        // SES DİNLEYİCİ VE OYNATICI
         onValue(ref(db, `games/${gameCode}/lastAudio`), (s) => {
             const a = s.val();
             if(a && a.sender !== myName) {
                 let audio = new Audio(a.data);
-                audio.play().catch(e => console.log("Otomatik oynatma engellendi, ekrana tıkla."));
+                audio.play();
             }
         });
 
-        // DM DİNLEYİCİ
         onValue(ref(db, `games/${gameCode}/dms/${myName}`), (s) => {
             if(s.exists()) {
                 document.getElementById('dmBox').style.display = 'block';
