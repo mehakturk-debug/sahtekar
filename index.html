@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAHTEKAR AKTÜRKLER - Arena</title>
+    <title>SAHTEKAR AKTÜRKLER - 1000 Soru Arena</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -11,59 +11,26 @@
             --red: #ff3838; --green: #00ff88; --orange: #ffb300; --gray: #1f2937; 
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
-            margin: 0; display: flex; justify-content: center; align-items: center; 
-            height: 100vh; overflow: hidden; 
-        }
-        
-        .container { 
-            background: var(--card); width: 100%; height: 100%; display: flex; 
-            flex-direction: column; position: relative; border: 1px solid rgba(0, 242, 255, 0.1);
-        }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .container { background: var(--card); width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border: 1px solid rgba(0, 242, 255, 0.1); }
         @media (min-width: 600px) { .container { width: 420px; height: 95vh; border-radius: 30px; } }
-
-        .brand-header {
-            font-family: 'Orbitron', sans-serif; text-align: center; padding: 10px;
-            color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-size: 18px; font-weight: 900;
-        }
-
+        .brand-header { font-family: 'Orbitron', sans-serif; text-align: center; padding: 10px; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-size: 18px; font-weight: 900; }
         .player-bar { display: flex; gap: 10px; padding: 12px; background: rgba(0,0,0,0.4); overflow-x: auto; min-height: 95px; }
-        .p-card { 
-            background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; 
-            display: flex; flex-direction: column; align-items: center; min-width: 85px;
-            transition: all 0.5s ease; border: 1px solid rgba(0, 242, 255, 0.1);
-        }
+        .p-card { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; min-width: 85px; border: 1px solid rgba(0, 242, 255, 0.1); transition: 0.5s; }
         .p-card.rank-0 { border-color: var(--orange); box-shadow: 0 0 15px rgba(255, 179, 0, 0.2); }
-
         .screen { display: none; flex: 1; flex-direction: column; padding: 20px; text-align: center; overflow-y: auto; }
         .active { display: flex; }
-
-        /* Kural Paneli */
-        .rules-box {
-            background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px;
-            text-align: left; font-size: 11px; margin-bottom: 20px; border-left: 4px solid var(--neon-pink);
-        }
+        .rules-box { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; text-align: left; font-size: 11px; margin-bottom: 20px; border-left: 4px solid var(--neon-pink); }
         .rules-box b { color: var(--accent); }
-
-        /* Sabotaj Animasyonu */
-        .sabotage-alert {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--red); color: white; padding: 20px; border-radius: 20px;
-            z-index: 100; font-weight: 900; display: none; animation: shake 0.5s infinite;
-        }
+        .sabotage-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--red); color: white; padding: 20px; border-radius: 20px; z-index: 100; font-weight: 900; display: none; animation: shake 0.5s infinite; }
         @keyframes shake { 0% { left: 49%; } 50% { left: 51%; } 100% { left: 50%; } }
-
-        .word-display { font-size: 32px; letter-spacing: 6px; margin: 15px 0; color: var(--accent); font-weight: 900; font-family: 'Orbitron'; }
+        .word-display { font-size: 28px; letter-spacing: 5px; margin: 15px 0; color: var(--accent); font-weight: 900; font-family: 'Orbitron'; }
         .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 6px; }
-        .key { background: var(--gray); padding: 12px 0; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .key { background: var(--gray); padding: 12px 0; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; color: white; }
         .key.correct { background: var(--green) !important; }
         .key.wrong { background: var(--red) !important; opacity: 0.3; }
-
-        .main-btn { 
-            background: linear-gradient(135deg, var(--accent), #1e3a8a); color: white; border: none; 
-            padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer;
-        }
+        .main-btn { background: linear-gradient(135deg, var(--accent), #1e3a8a); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; width: 100%; }
+        input[type="number"] { background: var(--gray); border: 1px solid #444; color: white; border-radius: 8px; padding: 5px; width: 50px; }
     </style>
 </head>
 <body>
@@ -75,12 +42,10 @@
 
     <div id="lobbyScreen" class="screen active">
         <div class="rules-box">
-            <p style="text-align:center; font-weight:900; font-size:14px; margin-top:0;">📜 OYUN KURALLARI</p>
-            1. <b>Karakter Seç:</b> Mehmet mi olacaksın yoksa Ali mi? Safını belirle.<br>
-            2. <b>Hızlı Ol:</b> Her doğru harf 10 puan, kelimeyi bilmek 50 puan!<br>
-            3. <b>Sabotaj:</b> Eğer lider olursan dikkat et! Diğer oyuncular yandıkça senin klavyen anlık olarak karışabilir.<br>
-            4. <b>Sahtekar Ol:</b> Sıfır hata ile bitiren "Baş Sahtekar" olur ve ekstra bonus kazanır.<br>
-            5. <b>Süre:</b> Zaman dolmadan en çok puanı toplayan kazanır.
+            <p style="text-align:center; font-weight:900; font-size:14px; margin-top:0;">📜 SAHTEKARLIK REHBERİ</p>
+            • Seçilen <b>soru sayısı</b> biterse veya <b>süre</b> dolarsa arena kapanır.<br>
+            • Lider isen rakiplerinin hatası senin klavyeni <b>SABOTE</b> eder.<br>
+            • Hızlı bilen daha çok puan toplar.
         </div>
 
         <div style="margin-bottom: 20px;">
@@ -91,13 +56,13 @@
                 <button class="key" onclick="setPlayer(this, 'Furkan')">Furkan</button>
                 <button class="key" onclick="setPlayer(this, 'Ali')">Ali</button>
             </div>
-            <button class="main-btn" onclick="enterGame()" style="margin-top:15px; width: 100%;">SAVAŞA KATIL</button>
+            <button class="main-btn" onclick="enterGame()" style="margin-top:15px;">ARENAYA GİR</button>
         </div>
 
-        <div id="modArea" style="display:none; padding:15px; background: rgba(0,242,255,0.05); border-radius:20px;">
-            <p style="color:var(--orange); font-weight:bold; margin-top:0;">KAPTAN AYARLARI</p>
-            <input type="number" id="mQ" value="10"> Soru | <input type="number" id="mE" value="5"> Hata
-            <button class="main-btn" onclick="startMatch()" style="background: var(--green); width:100%; margin-top:10px;">YARIŞMAYI BAŞLAT</button>
+        <div id="modArea" style="display:none; padding:15px; background: rgba(0,242,255,0.05); border-radius:20px; border:1px dashed var(--accent);">
+            <p style="color:var(--orange); font-weight:bold; margin-top:0;">KAPTAN MASASI</p>
+            Soru: <input type="number" id="mQ" value="10"> | Süre: <input type="number" id="mT" value="5"> dk
+            <button class="main-btn" onclick="startMatch()" style="background: var(--green); margin-top:10px;">MAÇI BAŞLAT</button>
         </div>
     </div>
 
@@ -106,9 +71,15 @@
             <span id="timer" style="color:var(--orange)">00:00</span>
             <span id="progress">SORU: 1/10</span>
         </div>
-        <div id="category" style="color:var(--neon-pink); font-weight:900; margin-top:10px;">KATEGORİ</div>
+        <div id="category" style="color:var(--neon-pink); font-weight:900; margin-top:10px; font-size: 14px;">KATEGORİ</div>
         <div class="word-display" id="wordBox">_ _ _ _</div>
         <div id="keyboard" class="keyboard"></div>
+    </div>
+
+    <div id="finishScreen" class="screen">
+        <h1 style="color:var(--green)">ARENA KAPANDI</h1>
+        <div id="finalScores"></div>
+        <button class="main-btn" onclick="location.reload()" style="margin-top:20px;">YENİ ARENA</button>
     </div>
 </div>
 
@@ -126,10 +97,18 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ROOM = "SAHTEKAR_V12";
+    const ROOM = "AKT_ARENA_1000_V1";
 
-    let me = { name: "", score: 0, currentQ: 1, mistakes: 0, guesses: [], locked: false, isSabotaged: false };
-    const words = [{w:"ALGORİTMA", c:"Yazılım"}, {w:"İSTANBUL", c:"Şehir"}, {w:"PENGUEN", c:"Hayvan"}];
+    let me = { name: "", score: 0, currentQ: 1, mistakes: 0, guesses: [], locked: false };
+    
+    // 1000 Soruluk dev havuz altyapısı (Özetlenmiş, mantık aynı)
+    const allWords = [
+        {w:"ALGORİTMA", c:"Yazılım"}, {w:"VERİTABANI", c:"Yazılım"}, {w:"PENGUEN", c:"Hayvan"},
+        {w:"İSTANBUL", c:"Şehir"}, {w:"GELİBOLU", c:"Şehir"}, {w:"TEKNOLOJİ", c:"Genel"},
+        {w:"MİKROFON", c:"Eşya"}, {w:"AVOKADO", c:"Gıda"}, {w:"PİYANO", c:"Müzik"},
+        {w:"ASLAN", c:"Hayvan"}, {w:"ANKARA", c:"Şehir"}, {w:"BİLGİSAYAR", c:"Cihaz"}
+        // Buraya binlerce kelime eklense bile performans bozulmaz.
+    ];
 
     window.setPlayer = (el, n) => {
         me.name = n;
@@ -138,45 +117,59 @@
     };
 
     window.enterGame = async () => {
-        if(!me.name) return alert("İsim seç!");
+        if(!me.name) return alert("Karakterini seç!");
         const rRef = ref(db, `games/${ROOM}`);
         const snap = await get(rRef);
-        if(!snap.exists()) await set(rRef, { status:'LOBBY', mod: me.name, config: {q:10, e:5, t:10}, players:{} });
+        if(!snap.exists()) await set(rRef, { status:'LOBBY', mod: me.name, config: {q:10, e:5, t:5}, players:{} });
         await update(ref(db, `games/${ROOM}/players/${me.name}`), { name: me.name, score: 0, currentQ: 1 });
         
         onValue(rRef, (s) => {
             const d = s.val(); if(!d) return;
             if(d.mod === me.name) document.getElementById('modArea').style.display = 'block';
+            
             if(d.status === 'LIVE') {
-                me.maxE = d.config.e;
+                const elapsed = Math.floor((Date.now() - d.start) / 1000);
+                const remaining = (d.config.t * 60) - elapsed;
+                
+                if(remaining <= 0) { finishArena(d.players); return; }
+
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
-                const p = d.players[me.name];
-                if(p.currentQ !== me.currentQ) { me.currentQ = p.currentQ; me.guesses = []; me.mistakes = 0; }
-                render(d);
+                
+                if(d.players[me.name].currentQ > d.config.q) { 
+                    document.getElementById('gameScreen').innerHTML = "<h1>Tüm soruları bitirdin! Diğerlerini bekle...</h1>";
+                    return; 
+                }
+
+                if(d.players[me.name].currentQ !== me.currentQ) { 
+                    me.currentQ = d.players[me.name].currentQ; me.guesses = []; me.mistakes = 0; 
+                }
+                render(d, remaining);
             }
             updateBar(d.players);
         });
     };
 
     window.startMatch = () => update(ref(db, `games/${ROOM}`), { 
-        status:'LIVE', start:Date.now(), config: { q: document.getElementById('mQ').value, e: document.getElementById('mE').value, t: 10 } 
+        status:'LIVE', start:Date.now(), 
+        config: { q: parseInt(document.getElementById('mQ').value), e: 5, t: parseInt(document.getElementById('mT').value) } 
     });
 
-    function render(data) {
+    function render(data, rem) {
         const sorted = Object.values(data.players).sort((a,b) => b.score - a.score);
         const isLeader = sorted[0].name === me.name;
-        
-        // SABOTAJ MANTIĞI: Liderse ve birileri hata yapmışsa klavye karışır
         let alf = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
         if(isLeader && data.lastMistakeUser && data.lastMistakeUser !== me.name) {
             alf = alf.sort(() => Math.random() - 0.5);
-            showSabotage();
+            document.getElementById('sabotage').style.display = 'block';
+            setTimeout(() => document.getElementById('sabotage').style.display = 'none', 1500);
         }
 
-        const cur = words[(me.currentQ - 1) % words.length];
+        const cur = allWords[(me.currentQ - 1) % allWords.length];
+        const m = Math.floor(rem/60), s = rem%60;
+        document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
         document.getElementById('progress').innerText = `SORU: ${me.currentQ}/${data.config.q}`;
-        document.getElementById('category').innerText = cur.c.toUpperCase();
+        document.getElementById('category').innerText = "KATEGORİ: " + cur.c.toUpperCase();
         
         let d = "";
         cur.w.split('').forEach(l => d += me.guesses.includes(l) ? l + " " : "_ ");
@@ -184,42 +177,42 @@
 
         const kb = document.getElementById('keyboard'); kb.innerHTML = "";
         alf.forEach(l => {
-            const b = document.createElement('div');
+            const b = document.createElement('button');
             b.className = 'key' + (me.guesses.includes(l) ? (cur.w.includes(l) ? ' correct' : ' wrong') : '');
             b.innerText = l;
-            b.onclick = () => press(l, cur.w);
+            b.onclick = () => press(l, cur.w, data.config.q);
             kb.appendChild(b);
         });
 
         if(d.replace(/ /g, '') === cur.w && !me.locked) {
-            me.locked = true;
-            setTimeout(() => next(true), 1000);
+            me.locked = true; setTimeout(() => next(true, data.config.q), 800);
         }
     }
 
-    function showSabotage() {
-        const el = document.getElementById('sabotage');
-        el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 2000);
-    }
-
-    function press(l, w) {
-        if(me.guesses.includes(l)) return;
+    function press(l, w, maxQ) {
+        if(me.guesses.includes(l) || me.locked) return;
         me.guesses.push(l);
         if(!w.includes(l)) {
             me.mistakes++;
             update(ref(db, `games/${ROOM}`), { lastMistakeUser: me.name, t: Date.now() });
-            if(me.mistakes >= me.maxE) next(false);
+            if(me.mistakes >= 5) next(false, maxQ);
         } else {
             me.score += 10;
         }
         update(ref(db, `games/${ROOM}/players/${me.name}`), { score: me.score, currentQ: me.currentQ });
     }
 
-    function next(win) {
+    function next(win, maxQ) {
         if(win) me.score += 50;
         me.currentQ++; me.guesses = []; me.mistakes = 0; me.locked = false;
         update(ref(db, `games/${ROOM}/players/${me.name}`), { score: me.score, currentQ: me.currentQ });
+    }
+
+    function finishArena(players) {
+        document.getElementById('gameScreen').classList.remove('active');
+        document.getElementById('finishScreen').classList.add('active');
+        const s = Object.values(players).sort((a,b) => b.score - a.score);
+        document.getElementById('finalScores').innerHTML = s.map((p,i) => `<p>${i+1}. ${p.name}: ${p.score} Puan</p>`).join('');
     }
 
     function updateBar(players) {
