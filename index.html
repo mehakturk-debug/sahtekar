@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAHTEKAR AKTÜRKLER - 1000 Soru Arena</title>
+    <title>SAHTEKAR AKTÜRKLER - 100 TL ÖDÜLLÜ</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -14,54 +14,75 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .container { background: var(--card); width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border: 1px solid rgba(0, 242, 255, 0.1); }
         @media (min-width: 600px) { .container { width: 420px; height: 95vh; border-radius: 30px; } }
+        
         .brand-header { font-family: 'Orbitron', sans-serif; text-align: center; padding: 10px; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-size: 18px; font-weight: 900; }
+        
+        /* Ödül Banner */
+        .reward-banner { background: linear-gradient(90deg, #ffd700, #ffa500); color: #000; font-weight: 900; text-align: center; padding: 5px; font-size: 12px; animation: flash 1s infinite; }
+        @keyframes flash { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+
         .player-bar { display: flex; gap: 10px; padding: 12px; background: rgba(0,0,0,0.4); overflow-x: auto; min-height: 95px; }
         .p-card { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; min-width: 85px; border: 1px solid rgba(0, 242, 255, 0.1); transition: 0.5s; }
         .p-card.rank-0 { border-color: var(--orange); box-shadow: 0 0 15px rgba(255, 179, 0, 0.2); }
+        
         .screen { display: none; flex: 1; flex-direction: column; padding: 20px; text-align: center; overflow-y: auto; }
         .active { display: flex; }
-        .rules-box { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; text-align: left; font-size: 11px; margin-bottom: 20px; border-left: 4px solid var(--neon-pink); }
-        .rules-box b { color: var(--accent); }
+
+        .rules-box { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; text-align: left; font-size: 11px; margin-bottom: 15px; border-left: 4px solid var(--neon-pink); }
+        
+        /* Karakter Seçim Düzeltmesi */
+        .char-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+        .char-item { 
+            background: var(--gray); padding: 15px 5px; border-radius: 12px; font-weight: bold; 
+            cursor: pointer; border: 2px solid transparent; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .char-item.selected { border-color: var(--accent); background: #1e293b; box-shadow: 0 0 15px var(--accent); }
+
         .sabotage-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--red); color: white; padding: 20px; border-radius: 20px; z-index: 100; font-weight: 900; display: none; animation: shake 0.5s infinite; }
         @keyframes shake { 0% { left: 49%; } 50% { left: 51%; } 100% { left: 50%; } }
+        
         .word-display { font-size: 28px; letter-spacing: 5px; margin: 15px 0; color: var(--accent); font-weight: 900; font-family: 'Orbitron'; }
         .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 6px; }
         .key { background: var(--gray); padding: 12px 0; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; color: white; }
         .key.correct { background: var(--green) !important; }
         .key.wrong { background: var(--red) !important; opacity: 0.3; }
+        
         .main-btn { background: linear-gradient(135deg, var(--accent), #1e3a8a); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; width: 100%; }
-        input[type="number"] { background: var(--gray); border: 1px solid #444; color: white; border-radius: 8px; padding: 5px; width: 50px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="reward-banner">💰 1000 PUANA ULAŞAN İLK KİŞİYE 100 TL ÖDÜL! 💰</div>
     <div class="brand-header">SAHTEKAR AKTÜRKLER</div>
     <div id="sabotage" class="sabotage-alert">⚠️ SABOTAJ! KLAVYE KARIŞTI! ⚠️</div>
     <div class="player-bar" id="playerBar"></div>
 
     <div id="lobbyScreen" class="screen active">
         <div class="rules-box">
-            <p style="text-align:center; font-weight:900; font-size:14px; margin-top:0;">📜 SAHTEKARLIK REHBERİ</p>
-            • Seçilen <b>soru sayısı</b> biterse veya <b>süre</b> dolarsa arena kapanır.<br>
-            • Lider isen rakiplerinin hatası senin klavyeni <b>SABOTE</b> eder.<br>
-            • Hızlı bilen daha çok puan toplar.
+            <p style="text-align:center; font-weight:900; font-size:14px; margin-top:0;">📜 ARENA KURALLARI</p>
+            • <b>ÖDÜL:</b> 1000 puana ulaşan ilk oyuncu <b>100 TL</b> kazanır!<br>
+            • Soru sayısı biterse veya süre dolarsa en yüksek puan kazanır.<br>
+            • Lider isen rakiplerin yandıkça klavyen <b>SABOTE</b> edilir.
         </div>
 
         <div style="margin-bottom: 20px;">
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-                <button class="key" onclick="setPlayer(this, 'Mehmet')">Mehmet</button>
-                <button class="key" onclick="setPlayer(this, 'Emre')">Emre</button>
-                <button class="key" onclick="setPlayer(this, 'Recep')">Recep</button>
-                <button class="key" onclick="setPlayer(this, 'Furkan')">Furkan</button>
-                <button class="key" onclick="setPlayer(this, 'Ali')">Ali</button>
+            <p style="font-size: 12px; margin-bottom: 8px;">KARAKTERİNİ SEÇ:</p>
+            <div class="char-grid">
+                <div class="char-item" onclick="selectCharacter(this, 'Mehmet')">Mehmet</div>
+                <div class="char-item" onclick="selectCharacter(this, 'Emre')">Emre</div>
+                <div class="char-item" onclick="selectCharacter(this, 'Recep')">Recep</div>
+                <div class="char-item" onclick="selectCharacter(this, 'Furkan')">Furkan</div>
+                <div class="char-item" onclick="selectCharacter(this, 'Ali')">Ali</div>
             </div>
-            <button class="main-btn" onclick="enterGame()" style="margin-top:15px;">ARENAYA GİR</button>
+            <button class="main-btn" onclick="enterGame()">ARENAYA GİR</button>
         </div>
 
         <div id="modArea" style="display:none; padding:15px; background: rgba(0,242,255,0.05); border-radius:20px; border:1px dashed var(--accent);">
             <p style="color:var(--orange); font-weight:bold; margin-top:0;">KAPTAN MASASI</p>
-            Soru: <input type="number" id="mQ" value="10"> | Süre: <input type="number" id="mT" value="5"> dk
+            Soru: <input type="number" id="mQ" value="20" style="width:40px; background:var(--gray); color:white; border:none; border-radius:5px;"> 
+            Süre: <input type="number" id="mT" value="10" style="width:40px; background:var(--gray); color:white; border:none; border-radius:5px;"> dk
             <button class="main-btn" onclick="startMatch()" style="background: var(--green); margin-top:10px;">MAÇI BAŞLAT</button>
         </div>
     </div>
@@ -74,12 +95,6 @@
         <div id="category" style="color:var(--neon-pink); font-weight:900; margin-top:10px; font-size: 14px;">KATEGORİ</div>
         <div class="word-display" id="wordBox">_ _ _ _</div>
         <div id="keyboard" class="keyboard"></div>
-    </div>
-
-    <div id="finishScreen" class="screen">
-        <h1 style="color:var(--green)">ARENA KAPANDI</h1>
-        <div id="finalScores"></div>
-        <button class="main-btn" onclick="location.reload()" style="margin-top:20px;">YENİ ARENA</button>
     </div>
 </div>
 
@@ -97,30 +112,30 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ROOM = "AKT_ARENA_1000_V1";
+    const ROOM = "AKT_FINAL_REWARD_V1";
 
     let me = { name: "", score: 0, currentQ: 1, mistakes: 0, guesses: [], locked: false };
     
-    // 1000 Soruluk dev havuz altyapısı (Özetlenmiş, mantık aynı)
+    // 1000 Soru Altyapısı
     const allWords = [
         {w:"ALGORİTMA", c:"Yazılım"}, {w:"VERİTABANI", c:"Yazılım"}, {w:"PENGUEN", c:"Hayvan"},
-        {w:"İSTANBUL", c:"Şehir"}, {w:"GELİBOLU", c:"Şehir"}, {w:"TEKNOLOJİ", c:"Genel"},
-        {w:"MİKROFON", c:"Eşya"}, {w:"AVOKADO", c:"Gıda"}, {w:"PİYANO", c:"Müzik"},
-        {w:"ASLAN", c:"Hayvan"}, {w:"ANKARA", c:"Şehir"}, {w:"BİLGİSAYAR", c:"Cihaz"}
-        // Buraya binlerce kelime eklense bile performans bozulmaz.
+        {w:"İSTANBUL", c:"Şehir"}, {w:"GELİBOLU", c:"Şehir"}, {w:"BİLGİSAYAR", c:"Cihaz"}
+        // ... Diğer kelimeler buraya
     ];
 
-    window.setPlayer = (el, n) => {
-        me.name = n;
-        document.querySelectorAll('.key').forEach(b => b.style.borderColor = "transparent");
-        el.style.borderColor = "var(--accent)";
+    // Karakter Seçim Düzeltmesi (Tıklama Garantili)
+    window.selectCharacter = (el, name) => {
+        me.name = name;
+        document.querySelectorAll('.char-item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        if(navigator.vibrate) navigator.vibrate(50);
     };
 
     window.enterGame = async () => {
-        if(!me.name) return alert("Karakterini seç!");
+        if(!me.name) return alert("Önce karakterini seç!");
         const rRef = ref(db, `games/${ROOM}`);
         const snap = await get(rRef);
-        if(!snap.exists()) await set(rRef, { status:'LOBBY', mod: me.name, config: {q:10, e:5, t:5}, players:{} });
+        if(!snap.exists()) await set(rRef, { status:'LOBBY', mod: me.name, config: {q:20, e:5, t:10}, players:{} });
         await update(ref(db, `games/${ROOM}/players/${me.name}`), { name: me.name, score: 0, currentQ: 1 });
         
         onValue(rRef, (s) => {
@@ -129,40 +144,35 @@
             
             if(d.status === 'LIVE') {
                 const elapsed = Math.floor((Date.now() - d.start) / 1000);
-                const remaining = (d.config.t * 60) - elapsed;
-                
-                if(remaining <= 0) { finishArena(d.players); return; }
+                const rem = (d.config.t * 60) - elapsed;
+                if(rem <= 0) { alert("Süre bitti!"); location.reload(); return; }
 
                 document.getElementById('lobbyScreen').classList.remove('active');
                 document.getElementById('gameScreen').classList.add('active');
                 
-                if(d.players[me.name].currentQ > d.config.q) { 
-                    document.getElementById('gameScreen').innerHTML = "<h1>Tüm soruları bitirdin! Diğerlerini bekle...</h1>";
-                    return; 
-                }
+                const p = d.players[me.name];
+                if(p.score >= 1000) { alert("TEBRİKLER! " + p.name + " 1000 PUANA ULAŞTI VE KAZANDI!"); location.reload(); }
 
-                if(d.players[me.name].currentQ !== me.currentQ) { 
-                    me.currentQ = d.players[me.name].currentQ; me.guesses = []; me.mistakes = 0; 
-                }
-                render(d, remaining);
+                if(p.currentQ !== me.currentQ) { me.currentQ = p.currentQ; me.guesses = []; me.mistakes = 0; }
+                render(d, rem);
             }
             updateBar(d.players);
         });
     };
 
     window.startMatch = () => update(ref(db, `games/${ROOM}`), { 
-        status:'LIVE', start:Date.now(), 
-        config: { q: parseInt(document.getElementById('mQ').value), e: 5, t: parseInt(document.getElementById('mT').value) } 
+        status:'LIVE', start:Date.now(), config: { q: parseInt(document.getElementById('mQ').value), e: 5, t: parseInt(document.getElementById('mT').value) } 
     });
 
     function render(data, rem) {
         const sorted = Object.values(data.players).sort((a,b) => b.score - a.score);
         const isLeader = sorted[0].name === me.name;
         let alf = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
+        
         if(isLeader && data.lastMistakeUser && data.lastMistakeUser !== me.name) {
             alf = alf.sort(() => Math.random() - 0.5);
             document.getElementById('sabotage').style.display = 'block';
-            setTimeout(() => document.getElementById('sabotage').style.display = 'none', 1500);
+            setTimeout(() => document.getElementById('sabotage').style.display = 'none', 1000);
         }
 
         const cur = allWords[(me.currentQ - 1) % allWords.length];
@@ -206,13 +216,6 @@
         if(win) me.score += 50;
         me.currentQ++; me.guesses = []; me.mistakes = 0; me.locked = false;
         update(ref(db, `games/${ROOM}/players/${me.name}`), { score: me.score, currentQ: me.currentQ });
-    }
-
-    function finishArena(players) {
-        document.getElementById('gameScreen').classList.remove('active');
-        document.getElementById('finishScreen').classList.add('active');
-        const s = Object.values(players).sort((a,b) => b.score - a.score);
-        document.getElementById('finalScores').innerHTML = s.map((p,i) => `<p>${i+1}. ${p.name}: ${p.score} Puan</p>`).join('');
     }
 
     function updateBar(players) {
