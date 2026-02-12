@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Buzzer Arena Multiplayer</title>
+    <title>Buzzer Battle - Can Pazarı</title>
     <style>
-        :root { --red: #ff4757; --green: #2ed573; --yellow: #ffa502; --dark: #2f3542; }
+        :root { --red: #ff4757; --green: #2ed573; --yellow: #ffa502; --dark: #2f3542; --blue: #3498db; }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; overflow: hidden; user-select: none; }
         
         #game-canvas { 
@@ -14,46 +14,42 @@
             cursor: pointer; position: relative;
         }
 
-        .leaderboard {
-            position: absolute; top: 10px; width: 90%; 
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-            pointer-events: none;
+        .players-grid {
+            position: absolute; top: 10px; width: 95%; 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;
         }
-        .player-badge {
-            background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 20px;
-            font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1);
+        .hp-card {
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.1);
         }
+        .hp-bar-bg { width: 100%; height: 8px; background: #444; border-radius: 4px; margin-top: 5px; overflow: hidden; }
+        .hp-bar-fill { height: 100%; background: var(--green); transition: width 0.3s; }
 
-        #status-text { font-size: 2.5rem; font-weight: bold; text-align: center; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        #timer-display { font-size: 4rem; font-weight: 800; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        #status-text { font-size: 2.2rem; font-weight: bold; text-align: center; z-index: 5; }
+        #timer-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
         
-        .admin-controls { position: absolute; bottom: 20px; display: flex; gap: 10px; }
-        button { 
-            padding: 15px 30px; border-radius: 50px; border: none; 
-            background: white; color: var(--dark); font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-        }
-        button:active { transform: scale(0.95); }
+        .admin-controls { position: absolute; bottom: 20px; }
+        button { padding: 15px 30px; border-radius: 50px; border: none; background: white; font-weight: bold; cursor: pointer; }
+        .dead { opacity: 0.5; background: #000 !important; }
     </style>
 </head>
 <body>
 
 <div id="game-canvas">
-    <div class="leaderboard" id="leaderboard"></div>
+    <div class="players-grid" id="players-grid"></div>
     
-    <div id="status-text">BAĞLANILIYOR...</div>
-    <div id="timer-display">0.000</div>
+    <div id="status-text">OYUNCULAR BEKLENİYOR...</div>
+    <div id="timer-display">HP: 100</div>
 
     <div class="admin-controls">
-        <button id="start-btn">YENİ TUR BAŞLAT</button>
+        <button id="start-btn">YENİ RAUNT BAŞLAT</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // --- CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
@@ -64,117 +60,132 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const gameRef = ref(db, "BUZZER_SESSION_V1");
+    const gameRef = ref(db, "BUZZER_BATTLE_V1");
 
-    const playerName = prompt("Adınız:") || "Oyuncu_" + Math.floor(Math.random()*100);
+    const myName = prompt("Adınız:") || "Oyuncu_" + Math.floor(Math.random()*100);
     
-    // --- STATE ---
     let canClick = false;
+    let myHP = 100;
+    let roundInProgress = false;
     let startTime = 0;
-    let isFinished = false;
 
-    // --- DOM ---
-    const canvas = document.getElementById('game-canvas');
-    const statusTxt = document.getElementById('status-text');
-    const timerTxt = document.getElementById('timer-display');
-    const board = document.getElementById('leaderboard');
-    const startBtn = document.getElementById('start-btn');
+    // Oyuna Giriş Yap (Canını Tanımla)
+    update(ref(db, `BUZZER_BATTLE_V1/players/${myName}`), { hp: 100 });
 
-    // --- OYUN MANTIĞI ---
-
-    // Firebase'i Dinle
     onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
+
+        // Can Güncellemesi
+        if(data.players && data.players[myName]) {
+            myHP = data.players[myName].hp;
+            document.getElementById('timer-display').innerText = "HP: " + myHP;
+            if(myHP <= 0) {
+                setDeadMode();
+            }
+        }
 
         if (data.state === "WAITING") {
             setWaitingMode();
         } else if (data.state === "GO") {
             setGoMode();
+        } else if (data.state === "FINISHED") {
+            roundInProgress = false;
         }
-        renderLeaderboard(data.scores);
+
+        renderPlayers(data.players);
     });
 
     function setWaitingMode() {
-        isFinished = false;
+        if(myHP <= 0) return;
+        roundInProgress = true;
         canClick = false;
-        canvas.style.backgroundColor = "var(--red)";
+        document.body.style.backgroundColor = "var(--red)";
+        document.getElementById('game-canvas').style.backgroundColor = "var(--red)";
         statusTxt.innerText = "BEKLE...";
-        timerTxt.innerText = "0.000";
     }
 
     function setGoMode() {
-        if (isFinished) return;
-        canvas.style.backgroundColor = "var(--green)";
+        if(myHP <= 0 || !roundInProgress) return;
+        document.getElementById('game-canvas').style.backgroundColor = "var(--green)";
         statusTxt.innerText = "TIKLA!";
         startTime = performance.now();
         canClick = true;
     }
 
-    // Tıklama/Dokunma Olayı
-    canvas.addEventListener('touchstart', handleAction);
-    canvas.addEventListener('mousedown', handleAction);
+    function setDeadMode() {
+        document.getElementById('game-canvas').style.backgroundColor = "#1a1a1a";
+        statusTxt.innerText = "ELENDİN!";
+        canClick = false;
+        roundInProgress = false;
+    }
 
-    function handleAction(e) {
-        if (e.target.tagName === 'BUTTON') return;
-        if (isFinished) return;
+    const canvas = document.getElementById('game-canvas');
+    const statusTxt = document.getElementById('status-text');
+    const startBtn = document.getElementById('start-btn');
+
+    canvas.addEventListener('mousedown', handleAction);
+    canvas.addEventListener('touchstart', handleAction);
+
+    async function handleAction(e) {
+        if (e.target.tagName === 'BUTTON' || myHP <= 0 || !roundInProgress) return;
 
         if (canClick) {
-            // Başarılı Tıklama
-            const now = performance.now();
-            const score = ((now - startTime) / 1000).toFixed(3);
-            isFinished = true;
+            // YEŞİLDE İLK BASAN: Diğer herkesin canını azalt
             canClick = false;
+            roundInProgress = false;
+            const score = ((performance.now() - startTime) / 1000).toFixed(3);
+            statusTxt.innerText = "KAZANDIN! (" + score + "s)";
             
-            timerTxt.innerText = score;
-            statusTxt.innerText = "TAMAMLANDI!";
-            
-            // Firebase'e skoru yaz
-            update(ref(db, `BUZZER_SESSION_V1/scores`), {
-                [playerName]: score
-            });
+            // Diğer oyuncuları bul ve canlarını 10 düşür
+            const snap = await get(ref(db, `BUZZER_BATTLE_V1/players`));
+            const players = snap.val();
+            let updates = {};
+            for(let p in players) {
+                if(p !== myName && players[p].hp > 0) {
+                    updates[`players/${p}/hp`] = Math.max(0, players[p].hp - 10);
+                }
+            }
+            updates['state'] = "FINISHED";
+            update(gameRef, updates);
 
-        } else if (canvas.style.backgroundColor.includes("rgb(255, 71, 87)")) { // Kırmızıysa
-            // Erken Basma
-            isFinished = true;
-            statusTxt.innerText = "ERKEN BASTIN!";
-            timerTxt.innerText = "ELENDİ";
-            canvas.style.backgroundColor = "var(--yellow)";
+        } else if (document.getElementById('game-canvas').style.backgroundColor.includes("rgb(255, 71, 87)")) {
+            // KIRMIZIDA BASAN: Kendi canını 10 düşür
+            canClick = false;
+            roundInProgress = false;
+            statusTxt.innerText = "ERKEN BASIŞ! -10 HP";
+            document.getElementById('game-canvas').style.backgroundColor = "var(--yellow)";
             
-            update(ref(db, `BUZZER_SESSION_V1/scores`), {
-                [playerName]: "99.999" // Elenenleri en sona atar
+            update(ref(db, `BUZZER_BATTLE_V1/players/${myName}`), {
+                hp: Math.max(0, myHP - 10)
             });
+            update(gameRef, { state: "FINISHED" });
         }
     }
 
-    // Yönetici: Yeni Tur Başlat
     startBtn.addEventListener('click', async () => {
-        // Önce herkesi bekleme moduna al ve skorları temizle
-        await set(gameRef, {
-            state: "WAITING",
-            scores: {}
-        });
-
-        // 2-5 sn arası rastgele gecikme
-        const randomDelay = Math.floor(Math.random() * 3000) + 2000;
+        await update(gameRef, { state: "WAITING" });
         setTimeout(() => {
             update(gameRef, { state: "GO" });
-        }, randomDelay);
+        }, Math.random() * 3000 + 2000);
     });
 
-    function renderLeaderboard(scores) {
-        if (!scores) {
-            board.innerHTML = "";
-            return;
-        }
-        const sorted = Object.entries(scores).sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]));
-        board.innerHTML = sorted.map(([name, score], index) => `
-            <div class="player-badge">
-                ${index === 0 ? '👑' : ''} ${name}: ${score === "99.999" ? "❌" : score + "s"}
-            </div>
-        `).join('');
-    }
+    function renderPlayers(players) {
+        const grid = document.getElementById('players-grid');
+        grid.innerHTML = "";
+        if(!players) return;
 
+        Object.entries(players).forEach(([name, data]) => {
+            const card = document.createElement('div');
+            card.className = `hp-card ${data.hp <= 0 ? 'dead' : ''}`;
+            card.innerHTML = `
+                <div>${name}</div>
+                <div style="font-weight:bold; color:var(--green)">${data.hp} HP</div>
+                <div class="hp-bar-bg"><div class="hp-bar-fill" style="width:${data.hp}%"></div></div>
+            `;
+            grid.appendChild(card);
+        });
+    }
 </script>
 </body>
 </html>
