@@ -3,102 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAHTEKAR AKTÜRKLER - Usta Arena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Buzzer Arena Multiplayer</title>
     <style>
-        :root { 
-            --bg: #050811; --card: #111827; --accent: #00f2ff; --neon-pink: #ff007f; 
-            --red: #ff3838; --green: #00ff88; --gold: #ffb300; --gray: #1f2937; 
+        :root { --red: #ff4757; --green: #2ed573; --yellow: #ffa502; --dark: #2f3542; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; overflow: hidden; user-select: none; }
+        
+        #game-canvas { 
+            width: 100%; height: 100%; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; transition: background 0.1s ease;
+            cursor: pointer; position: relative;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .container { background: var(--card); width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border: 1px solid rgba(0, 242, 255, 0.1); }
-        @media (min-width: 600px) { .container { width: 420px; height: 95vh; border-radius: 30px; } }
 
-        .brand-header { font-family: 'Orbitron', sans-serif; text-align: center; padding: 10px; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-size: 16px; font-weight: 900; }
-        .player-bar { display: flex; gap: 10px; padding: 12px; background: rgba(0,0,0,0.5); overflow-x: auto; min-height: 105px; border-bottom: 2px solid #ffffff05; }
-        .p-card { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; min-width: 90px; transition: 0.5s; border: 2px solid transparent; }
-        .p-card.rank-0 { border-color: var(--gold); background: rgba(255, 179, 0, 0.1); transform: scale(1.05); }
+        .leaderboard {
+            position: absolute; top: 10px; width: 90%; 
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            pointer-events: none;
+        }
+        .player-badge {
+            background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 20px;
+            font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1);
+        }
 
-        .screen { display: none; flex: 1; flex-direction: column; padding: 15px; text-align: center; overflow-y: auto; }
-        .active { display: flex; }
-
-        /* Uzun Kural Paneli */
-        .long-rules { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; text-align: left; font-size: 11px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
-        .long-rules h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-align: center; }
-        .long-rules b { color: var(--neon-pink); }
-
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; font-size: 10px; }
-        .config-grid select, .config-grid input { background: var(--gray); border: none; color: white; border-radius: 5px; padding: 5px; width: 100%; }
-
-        .word-display { font-size: 32px; letter-spacing: 6px; margin: 15px 0; color: var(--accent); font-weight: 900; font-family: 'Orbitron'; }
-        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 6px; }
-        .key { background: var(--gray); padding: 12px 0; border-radius: 10px; font-weight: bold; border: none; color: white; cursor: pointer; }
-        .key.correct { background: var(--green) !important; }
-        .key.wrong { background: var(--red) !important; opacity: 0.3; }
-
-        .main-btn { background: linear-gradient(135deg, var(--accent), #1e3a8a); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px; }
-        .reset-btn { background: var(--red); color: white; border: none; padding: 6px; border-radius: 8px; font-size: 9px; cursor: pointer; margin-top: 8px; opacity: 0.7; }
+        #status-text { font-size: 2.5rem; font-weight: bold; text-align: center; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #timer-display { font-size: 4rem; font-weight: 800; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        
+        .admin-controls { position: absolute; bottom: 20px; display: flex; gap: 10px; }
+        button { 
+            padding: 15px 30px; border-radius: 50px; border: none; 
+            background: white; color: var(--dark); font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="brand-header">SAHTEKAR AKTÜRKLER</div>
-    <div class="player-bar" id="playerBar"></div>
+<div id="game-canvas">
+    <div class="leaderboard" id="leaderboard"></div>
+    
+    <div id="status-text">BAĞLANILIYOR...</div>
+    <div id="timer-display">0.000</div>
 
-    <div id="lobbyScreen" class="screen active">
-        <div class="long-rules">
-            <h3>📜 ARENA KİTABESİ</h3>
-            1. <b>Karakter ve Ruh:</b> Önce karakterini seç. Mehmet, Ali, Emre... Kimin sahtekarlığı daha büyükse o kazanır.<br><br>
-            2. <b>Büyük Ödül:</b> Turnuva boyunca <b>1000 puana</b> ulaşan ilk oyuncu <b>100 TL</b> büyük ödülün sahibi olur. Usta seni her adımda izliyor olacak!<br><br>
-            3. <b>Sabotaj Mekaniği:</b> Liderlik koltuğuna oturursan dikkat et! Diğer oyuncular harf kaçırdıkça senin klavyen anlık olarak <b>karışır</b>. Liderlik bedel ister.<br><br>
-            4. <b>Ekonomi:</b> Sıkıştığında puanlarını kullan! <b>Harf Al</b> butonu ile usta sana yardım eder ama bedelini puanınla ödersin.<br><br>
-            5. <b>Combo & Seri:</b> Hata yapmadan seri yakalarsan usta seni ödüllendirir. 3'lü seri sana ekstra 30 puan getirir.
-        </div>
-
-        <div id="modSettings" style="display:none;" class="box" style="padding:10px; background:rgba(0,242,255,0.03); border-radius:15px; border:1px solid #ffffff10;">
-            <p style="margin:0 0 8px 0; font-size:11px; font-weight:bold; color:var(--gold)">👑 MODERATÖR PANELİ</p>
-            <div class="config-grid">
-                <div>Soru: <input type="number" id="mQ" value="20"></div>
-                <div>Süre (dk): <input type="number" id="mT" value="10"></div>
-                <div>Sabotaj: <select id="mS"><option value="ON">AÇIK</option><option value="OFF">KAPALI</option></select></div>
-                <div>Combo: <select id="mC"><option value="ON">AÇIK</option><option value="OFF">KAPALI</option></select></div>
-                <div>Harf Bedeli: <input type="number" id="mH" value="30"></div>
-                <div>Hata Sınırı: <input type="number" id="mE" value="5"></div>
-            </div>
-            <button class="main-btn" onclick="startArena()" style="background:var(--green); font-size:12px;">MAÇI BAŞLAT</button>
-            <button class="reset-btn" onclick="resetRoom()">ARENAYI SIFIRLA</button>
-        </div>
-
-        <div style="margin-top:10px;">
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px;">
-                <button class="key" style="font-size:10px;" onclick="pickChar('Mehmet')">Mehmet</button>
-                <button class="key" style="font-size:10px;" onclick="pickChar('Emre')">Emre</button>
-                <button class="key" style="font-size:10px;" onclick="pickChar('Recep')">Recep</button>
-                <button class="key" style="font-size:10px;" onclick="pickChar('Furkan')">Furkan</button>
-                <button class="key" style="font-size:10px;" onclick="pickChar('Ali')">Ali</button>
-            </div>
-            <button class="main-btn" onclick="joinArena()">ARENAYA GİR</button>
-        </div>
-    </div>
-
-    <div id="gameScreen" class="screen">
-        <div style="display:flex; justify-content:space-between; font-size:11px;">
-            <span id="timer" style="color:var(--orange)">00:00</span>
-            <span id="progress">SORU: 1/--</span>
-        </div>
-        <div id="category" style="color:var(--neon-pink); font-weight:900; font-size:14px; margin:10px 0;">KATEGORİ</div>
-        <div class="word-display" id="wordDisplay">_ _ _ _</div>
-        <button id="hintBtn" class="main-btn" style="font-size:10px; padding:6px; background:var(--gold); color:black; margin-bottom:15px;" onclick="buyLetter()">USTADAN HARF AL (-30P)</button>
-        <div id="keyboard" class="keyboard"></div>
+    <div class="admin-controls">
+        <button id="start-btn">YENİ TUR BAŞLAT</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+    // --- CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBcm1uY37IelMsTqoD0sAmsIH1nwBeYtCE",
         authDomain: "sahtekar-2f5d2.firebaseapp.com",
@@ -109,124 +64,117 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ROOM = "USTA_ARENA_V1";
+    const gameRef = ref(db, "BUZZER_SESSION_V1");
 
-    let state = { name: "", score: 0, currentQ: 1, mistakes: 0, guesses: [], locked: false };
-    const words = [{w:"ALGORİTMA", c:"Yazılım"}, {w:"GELİBOLU", c:"Şehir"}, {w:"MİKROFON", c:"Eşya"}, {w:"BİLGİSAYAR", c:"Cihaz"}];
+    const playerName = prompt("Adınız:") || "Oyuncu_" + Math.floor(Math.random()*100);
+    
+    // --- STATE ---
+    let canClick = false;
+    let startTime = 0;
+    let isFinished = false;
 
-    // USTA SES MOTORU (Erkek Sesi)
-    function ustaKonus(metin) {
-        const msg = new SpeechSynthesisUtterance(metin);
-        msg.lang = 'tr-TR';
-        msg.rate = 0.8; // Daha ağır ve vakur bir ses için
-        msg.pitch = 0.7; // Daha kalın/erkeksi bir ses için
-        window.speechSynthesis.speak(msg);
+    // --- DOM ---
+    const canvas = document.getElementById('game-canvas');
+    const statusTxt = document.getElementById('status-text');
+    const timerTxt = document.getElementById('timer-display');
+    const board = document.getElementById('leaderboard');
+    const startBtn = document.getElementById('start-btn');
+
+    // --- OYUN MANTIĞI ---
+
+    // Firebase'i Dinle
+    onValue(gameRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        if (data.state === "WAITING") {
+            setWaitingMode();
+        } else if (data.state === "GO") {
+            setGoMode();
+        }
+        renderLeaderboard(data.scores);
+    });
+
+    function setWaitingMode() {
+        isFinished = false;
+        canClick = false;
+        canvas.style.backgroundColor = "var(--red)";
+        statusTxt.innerText = "BEKLE...";
+        timerTxt.innerText = "0.000";
     }
 
-    window.pickChar = (n) => { state.name = n; ustaKonus("Hoş geldin " + n); };
+    function setGoMode() {
+        if (isFinished) return;
+        canvas.style.backgroundColor = "var(--green)";
+        statusTxt.innerText = "TIKLA!";
+        startTime = performance.now();
+        canClick = true;
+    }
 
-    window.joinArena = async () => {
-        if(!state.name) return alert("Karakter Seç!");
-        const rRef = ref(db, `games/${ROOM}`);
-        const snap = await get(rRef);
-        if(!snap.exists()) await set(rRef, { status:'LOBBY', mod: state.name, config: {q:20, e:5, t:10, s:'ON', c:'ON', h:30}, players:{} });
-        await update(ref(db, `games/${ROOM}/players/${state.name}`), { name: state.name, score: 0, currentQ: 1 });
-        
-        onValue(rRef, (s) => {
-            const d = s.val(); if(!d) return;
-            if(d.mod === state.name) document.getElementById('modSettings').style.display = 'block';
-            if(d.status === 'LIVE') {
-                const rem = (d.config.t * 60) - Math.floor((Date.now() - d.start) / 1000);
-                if(rem <= 0) { ustaKonus("Arena kapandı, geçmiş olsun."); location.reload(); return; }
-                document.getElementById('lobbyScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
-                document.getElementById('hintBtn').innerText = `USTADAN HARF AL (-${d.config.h}P)`;
-                render(d, rem);
-            }
-            updateLeaderboard(d.players);
-        });
-    };
+    // Tıklama/Dokunma Olayı
+    canvas.addEventListener('touchstart', handleAction);
+    canvas.addEventListener('mousedown', handleAction);
 
-    window.startArena = () => {
-        ustaKonus("Arena açılıyor, sahtekarlar sahaya!");
-        update(ref(db, `games/${ROOM}`), { 
-            status:'LIVE', start:Date.now(), 
-            config: { 
-                q: document.getElementById('mQ').value, e: document.getElementById('mE').value, 
-                t: document.getElementById('mT').value, s: document.getElementById('mS').value,
-                c: document.getElementById('mC').value, h: document.getElementById('mH').value
-            } 
-        });
-    };
+    function handleAction(e) {
+        if (e.target.tagName === 'BUTTON') return;
+        if (isFinished) return;
 
-    window.resetRoom = () => { if(confirm("Arenayı sıfırlıyorum usta?")) set(ref(db, `games/${ROOM}`), null).then(() => location.reload()); };
+        if (canClick) {
+            // Başarılı Tıklama
+            const now = performance.now();
+            const score = ((now - startTime) / 1000).toFixed(3);
+            isFinished = true;
+            canClick = false;
+            
+            timerTxt.innerText = score;
+            statusTxt.innerText = "TAMAMLANDI!";
+            
+            // Firebase'e skoru yaz
+            update(ref(db, `BUZZER_SESSION_V1/scores`), {
+                [playerName]: score
+            });
 
-    function render(data, rem) {
-        const cur = words[(state.currentQ - 1) % words.length];
-        document.getElementById('timer').innerText = `${Math.floor(rem/60)}:${(rem%60)<10?'0':''}${rem%60}`;
-        document.getElementById('progress').innerText = `SORU: ${state.currentQ}/${data.config.q}`;
-        document.getElementById('category').innerText = "KATEGORİ: " + cur.c.toUpperCase();
-        
-        let d = "";
-        cur.w.split('').forEach(l => d += state.guesses.includes(l) ? l + " " : "_ ");
-        document.getElementById('wordDisplay').innerText = d;
-
-        const kb = document.getElementById('keyboard'); kb.innerHTML = "";
-        "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split('').forEach(l => {
-            const b = document.createElement('button');
-            b.className = 'key' + (state.guesses.includes(l) ? (cur.w.includes(l) ? ' correct' : ' wrong') : '');
-            b.innerText = l;
-            b.onclick = () => handleInput(l, cur.w, data);
-            kb.appendChild(b);
-        });
-
-        if(d.replace(/ /g, '') === cur.w && !state.locked) {
-            state.locked = true; 
-            const tebrikler = ["Helal be!", "Aferin evlat!", "Bak sen usta olmuşsun!", "Çatır çatır biliyorsun!"];
-            ustaKonus(tebrikler[Math.floor(Math.random() * tebrikler.length)]);
-            setTimeout(() => next(true, data.config), 1200);
+        } else if (canvas.style.backgroundColor.includes("rgb(255, 71, 87)")) { // Kırmızıysa
+            // Erken Basma
+            isFinished = true;
+            statusTxt.innerText = "ERKEN BASTIN!";
+            timerTxt.innerText = "ELENDİ";
+            canvas.style.backgroundColor = "var(--yellow)";
+            
+            update(ref(db, `BUZZER_SESSION_V1/scores`), {
+                [playerName]: "99.999" // Elenenleri en sona atar
+            });
         }
     }
 
-    window.buyLetter = async () => {
-        const rRef = ref(db, `games/${ROOM}`);
-        const snap = await get(rRef);
-        const config = snap.val().config;
-        if(state.score < config.h) { ustaKonus("Puanın yetmez, sahtekarlık yapma!"); return; }
-        const cur = words[(state.currentQ - 1) % words.length];
-        const remaining = cur.w.split('').filter(l => !state.guesses.includes(l));
-        if(remaining.length > 0) {
-            state.score -= config.h;
-            ustaKonus("Al bakalım bir harf benden.");
-            handleInput(remaining[0], cur.w, snap.val());
+    // Yönetici: Yeni Tur Başlat
+    startBtn.addEventListener('click', async () => {
+        // Önce herkesi bekleme moduna al ve skorları temizle
+        await set(gameRef, {
+            state: "WAITING",
+            scores: {}
+        });
+
+        // 2-5 sn arası rastgele gecikme
+        const randomDelay = Math.floor(Math.random() * 3000) + 2000;
+        setTimeout(() => {
+            update(gameRef, { state: "GO" });
+        }, randomDelay);
+    });
+
+    function renderLeaderboard(scores) {
+        if (!scores) {
+            board.innerHTML = "";
+            return;
         }
-    };
-
-    function handleInput(l, w, data) {
-        if(state.guesses.includes(l) || state.locked) return;
-        state.guesses.push(l);
-        if(!w.includes(l)) { 
-            state.mistakes++; 
-            if(state.mistakes >= data.config.e) { ustaKonus("Yandın bittin!"); next(false, data.config); }
-            else { ustaKonus("Hadi oradan!"); }
-        } else { state.score += 10; }
-        update(ref(db, `games/${ROOM}/players/${state.name}`), { score: state.score, currentQ: state.currentQ });
+        const sorted = Object.entries(scores).sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]));
+        board.innerHTML = sorted.map(([name, score], index) => `
+            <div class="player-badge">
+                ${index === 0 ? '👑' : ''} ${name}: ${score === "99.999" ? "❌" : score + "s"}
+            </div>
+        `).join('');
     }
 
-    function next(win, cfg) {
-        if(win) { state.score += 50; if(cfg.c === 'ON' && state.mistakes === 0) state.score += 30; }
-        state.currentQ++; state.guesses = []; state.mistakes = 0; state.locked = false;
-        update(ref(db, `games/${ROOM}/players/${state.name}`), { score: state.score, currentQ: state.currentQ });
-    }
-
-    function updateLeaderboard(players) {
-        const s = Object.values(players).sort((a,b) => b.score - a.score);
-        document.getElementById('playerBar').innerHTML = s.map((p, i) => `
-            <div class="p-card ${i===0?'rank-0':''}">
-                <span style="font-size:10px; font-weight:bold;">${p.name}</span>
-                <span style="color:var(--accent); font-size:12px; font-weight:900;">${p.score}</span>
-            </div>`).join('');
-    }
 </script>
 </body>
 </html>
