@@ -3,46 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Buzzer Battle - Can Pazarı</title>
+    <title>Buzzer Battle - Can Barı Versiyonu</title>
     <style>
-        :root { --red: #ff4757; --green: #2ed573; --yellow: #ffa502; --dark: #2f3542; --blue: #3498db; }
+        :root { --red: #ff4757; --green: #2ed573; --yellow: #ffa502; --dark: #1e2227; }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; overflow: hidden; user-select: none; }
         
+        /* Üstteki Ana Can Barı */
+        #my-hp-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px;
+            background: rgba(0,0,0,0.8); z-index: 100; border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        #my-hp-bar { height: 100%; width: 100%; background: var(--green); transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s; }
+        #my-hp-text { position: absolute; width: 100%; text-align: center; line-height: 50px; font-weight: 900; font-size: 1.2rem; text-shadow: 1px 1px 5px #000; }
+
         #game-canvas { 
             width: 100%; height: 100%; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; transition: background 0.1s ease;
-            cursor: pointer; position: relative;
+            cursor: pointer; padding-top: 50px; box-sizing: border-box;
         }
 
         .players-grid {
-            position: absolute; top: 10px; width: 95%; 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;
+            position: absolute; top: 60px; width: 95%; 
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
         }
-        .hp-card {
-            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px;
-            text-align: center; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .hp-bar-bg { width: 100%; height: 8px; background: #444; border-radius: 4px; margin-top: 5px; overflow: hidden; }
-        .hp-bar-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+        .small-card { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1); }
 
-        #status-text { font-size: 2.2rem; font-weight: bold; text-align: center; z-index: 5; }
-        #timer-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
+        #status-text { font-size: 2rem; font-weight: bold; text-align: center; }
+        #hp-display { font-size: 1.2rem; opacity: 0.7; margin-top: 10px; }
         
-        .admin-controls { position: absolute; bottom: 20px; }
-        button { padding: 15px 30px; border-radius: 50px; border: none; background: white; font-weight: bold; cursor: pointer; }
-        .dead { opacity: 0.5; background: #000 !important; }
+        .admin-controls { position: absolute; bottom: 30px; }
+        button { padding: 15px 40px; border-radius: 50px; border: none; background: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
+<div id="my-hp-container">
+    <div id="my-hp-bar"></div>
+    <div id="my-hp-text">CAN: 100</div>
+</div>
+
 <div id="game-canvas">
     <div class="players-grid" id="players-grid"></div>
     
-    <div id="status-text">OYUNCULAR BEKLENİYOR...</div>
-    <div id="timer-display">HP: 100</div>
+    <div id="status-text">BAĞLANILIYOR...</div>
+    <div id="hp-display">Yükleniyor...</div>
 
     <div class="admin-controls">
-        <button id="start-btn">YENİ RAUNT BAŞLAT</button>
+        <button id="start-btn">YENİ RAUNT</button>
     </div>
 </div>
 
@@ -69,75 +76,78 @@
     let roundInProgress = false;
     let startTime = 0;
 
-    // Oyuna Giriş Yap (Canını Tanımla)
+    // Giriş
     update(ref(db, `BUZZER_BATTLE_V1/players/${myName}`), { hp: 100 });
 
     onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
 
-        // Can Güncellemesi
+        // Can ve Bar Güncelleme
         if(data.players && data.players[myName]) {
             myHP = data.players[myName].hp;
-            document.getElementById('timer-display').innerText = "HP: " + myHP;
-            if(myHP <= 0) {
-                setDeadMode();
-            }
+            updateHPUI(myHP);
+            if(myHP <= 0) setDeadMode();
         }
 
-        if (data.state === "WAITING") {
-            setWaitingMode();
-        } else if (data.state === "GO") {
-            setGoMode();
-        } else if (data.state === "FINISHED") {
-            roundInProgress = false;
-        }
+        if (data.state === "WAITING") setWaitingMode();
+        else if (data.state === "GO") setGoMode();
+        else if (data.state === "FINISHED") roundInProgress = false;
 
-        renderPlayers(data.players);
+        renderLeaderboard(data.players);
     });
+
+    function updateHPUI(hp) {
+        const bar = document.getElementById('my-hp-bar');
+        const text = document.getElementById('my-hp-text');
+        const hpDisp = document.getElementById('hp-display');
+        
+        bar.style.width = hp + "%";
+        text.innerText = "CANIM: " + hp;
+        hpDisp.innerText = "Sizin HP: " + hp;
+
+        if(hp > 50) bar.style.background = "var(--green)";
+        else if(hp > 20) bar.style.background = "var(--yellow)";
+        else bar.style.background = "var(--red)";
+    }
 
     function setWaitingMode() {
         if(myHP <= 0) return;
         roundInProgress = true;
         canClick = false;
-        document.body.style.backgroundColor = "var(--red)";
         document.getElementById('game-canvas').style.backgroundColor = "var(--red)";
-        statusTxt.innerText = "BEKLE...";
+        document.getElementById('status-text').innerText = "BEKLE...";
     }
 
     function setGoMode() {
         if(myHP <= 0 || !roundInProgress) return;
         document.getElementById('game-canvas').style.backgroundColor = "var(--green)";
-        statusTxt.innerText = "TIKLA!";
+        document.getElementById('status-text').innerText = "TIKLA!";
         startTime = performance.now();
         canClick = true;
     }
 
     function setDeadMode() {
-        document.getElementById('game-canvas').style.backgroundColor = "#1a1a1a";
-        statusTxt.innerText = "ELENDİN!";
+        document.getElementById('game-canvas').style.backgroundColor = "#000";
+        document.getElementById('status-text').innerText = "ELENDİN!";
         canClick = false;
         roundInProgress = false;
     }
 
     const canvas = document.getElementById('game-canvas');
-    const statusTxt = document.getElementById('status-text');
-    const startBtn = document.getElementById('start-btn');
-
     canvas.addEventListener('mousedown', handleAction);
-    canvas.addEventListener('touchstart', handleAction);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleAction(e); });
 
     async function handleAction(e) {
         if (e.target.tagName === 'BUTTON' || myHP <= 0 || !roundInProgress) return;
 
         if (canClick) {
-            // YEŞİLDE İLK BASAN: Diğer herkesin canını azalt
+            // YEŞİLDE İLK BASAN
             canClick = false;
             roundInProgress = false;
             const score = ((performance.now() - startTime) / 1000).toFixed(3);
-            statusTxt.innerText = "KAZANDIN! (" + score + "s)";
+            document.getElementById('status-text').innerText = "SALDIRDIN! (" + score + "s)";
             
-            // Diğer oyuncuları bul ve canlarını 10 düşür
             const snap = await get(ref(db, `BUZZER_BATTLE_V1/players`));
             const players = snap.val();
             let updates = {};
@@ -150,10 +160,10 @@
             update(gameRef, updates);
 
         } else if (document.getElementById('game-canvas').style.backgroundColor.includes("rgb(255, 71, 87)")) {
-            // KIRMIZIDA BASAN: Kendi canını 10 düşür
+            // KIRMIZIDA BASAN
             canClick = false;
             roundInProgress = false;
-            statusTxt.innerText = "ERKEN BASIŞ! -10 HP";
+            document.getElementById('status-text').innerText = "HATA! -10 HP";
             document.getElementById('game-canvas').style.backgroundColor = "var(--yellow)";
             
             update(ref(db, `BUZZER_BATTLE_V1/players/${myName}`), {
@@ -163,27 +173,21 @@
         }
     }
 
-    startBtn.addEventListener('click', async () => {
+    document.getElementById('start-btn').addEventListener('click', async () => {
         await update(gameRef, { state: "WAITING" });
-        setTimeout(() => {
-            update(gameRef, { state: "GO" });
-        }, Math.random() * 3000 + 2000);
+        setTimeout(() => { update(gameRef, { state: "GO" }); }, Math.random() * 3000 + 2000);
     });
 
-    function renderPlayers(players) {
+    function renderLeaderboard(players) {
         const grid = document.getElementById('players-grid');
         grid.innerHTML = "";
         if(!players) return;
-
         Object.entries(players).forEach(([name, data]) => {
-            const card = document.createElement('div');
-            card.className = `hp-card ${data.hp <= 0 ? 'dead' : ''}`;
-            card.innerHTML = `
-                <div>${name}</div>
-                <div style="font-weight:bold; color:var(--green)">${data.hp} HP</div>
-                <div class="hp-bar-bg"><div class="hp-bar-fill" style="width:${data.hp}%"></div></div>
-            `;
-            grid.appendChild(card);
+            const div = document.createElement('div');
+            div.className = "small-card";
+            div.style.opacity = data.hp <= 0 ? "0.3" : "1";
+            div.innerText = `${name}: ${data.hp} HP`;
+            grid.appendChild(div);
         });
     }
 </script>
